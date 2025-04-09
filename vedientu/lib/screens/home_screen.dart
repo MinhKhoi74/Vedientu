@@ -118,6 +118,10 @@ class HomeScreenState extends State<HomeScreen> {
                         onPressed: () => context.go('/transactions'),
                         child: const Text('Lịch sử giao dịch'),
                       ),
+                      ElevatedButton(
+                        onPressed: () => context.go('/profile'),
+                        child: const Text('Thông tin tài khoản'),
+                      ),
                     ],
                   ),
                 ),

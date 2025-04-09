@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
+  fluttertoast: ^8.2.2  
   # Icons
   cupertino_icons: ^1.0.8
   font_awesome_flutter: ^10.7.0
@@ -39,7 +39,12 @@ dependencies:
 
   # Hiệu ứng động
   flutter_animate: ^4.5.0
+  # camera
   mobile_scanner: ^6.0.7
+  # qr_code_scanner: ^1.0.1
+  camera: ^0.10.5+2
+  camera_windows: ^0.2.0
+
 
 dev_dependencies:
   flutter_test:

@@ -46,7 +46,7 @@ class LoginScreenState extends State<LoginScreen> {
           context.go('/driver-home'); // Điều hướng đến màn hình tài xế
           break;
         case "ADMIN":
-          context.go('/admin/dashboard'); // Điều hướng đến màn hình Admin
+          context.go('/admin-home'); // Điều hướng đến màn hình Admin
           break;
         default:
           ScaffoldMessenger.of(context).showSnackBar(
