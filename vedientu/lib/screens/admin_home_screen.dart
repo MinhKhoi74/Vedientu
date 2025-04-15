@@ -20,6 +20,14 @@ class AdminHomeScreen extends StatelessWidget {
               onPressed: () => context.go('/buses'),
               child: const Text("Quản lý Xe buýt"),
             ),
+            ElevatedButton(
+              onPressed: () => context.go('/admin/transactions'),
+              child: const Text("Quản lý giao dịch"),
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/admin/report'),
+              child: const Text("Quản lý doanh thu"),
+            ),
           ],
         ),
       ),

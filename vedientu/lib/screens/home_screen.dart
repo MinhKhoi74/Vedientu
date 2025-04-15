@@ -48,6 +48,18 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Tính số ngày còn lại với vé tháng
+  int _calculateDaysLeft(String expiryDateStr) {
+    try {
+      final expiryDate = DateTime.parse(expiryDateStr);
+      final now = DateTime.now();
+      final difference = expiryDate.difference(now).inDays;
+      return difference > 0 ? difference : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   // Đăng xuất
   Future<void> _logout(BuildContext context) async {
     await ApiService().logout(context);
@@ -92,13 +104,18 @@ class HomeScreenState extends State<HomeScreen> {
                                 itemCount: tickets.length,
                                 itemBuilder: (context, index) {
                                   final ticket = tickets[index];
+                                  final ticketType = ticket['ticketType'] ?? 'Không rõ';
+
+                                  final subtitle = ticketType == 'MONTHLY'
+                                      ? 'Hạn sử dụng còn lại: ${_calculateDaysLeft(ticket['expiryDate'])} ngày'
+                                      : 'Số lượt còn lại: ${ticket['remainingRides'] ?? 'Chưa cập nhật'}';
+
                                   return ListTile(
-                                    title: Text('Loại vé: ${ticket['ticketType'] ?? 'Không rõ'}'),
-                                    subtitle: Text(
-                                      'Lượt dùng còn lại: ${ticket['remainingRides'] ?? 'Chưa cập nhật'}',
-                                    ),
+                                    title: Text('Loại vé: $ticketType'),
+                                    subtitle: Text(subtitle),
                                     trailing: ElevatedButton(
-                                      onPressed: () => context.push('/tickets/${ticket['id']}', extra: ticket),
+                                      onPressed: () =>
+                                          context.push('/tickets/${ticket['id']}', extra: ticket),
                                       child: const Text('Chi tiết'),
                                     ),
                                   );
@@ -113,6 +130,10 @@ class HomeScreenState extends State<HomeScreen> {
                       ElevatedButton(
                         onPressed: () => context.go('/tickets'),
                         child: const Text('Danh sách vé'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.go('/ride-history'),
+                        child: const Text('Lịch sử chuyến đi'),
                       ),
                       ElevatedButton(
                         onPressed: () => context.go('/transactions'),

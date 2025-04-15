@@ -17,7 +17,13 @@ import 'screens/bus_list_screen.dart';
 import 'screens/bus_detail_screen.dart';
 import 'screens/add_bus_screen.dart';
 import 'screens/edit_bus_screen.dart';
-
+import 'screens/admin_register_screen.dart';
+import 'screens/transaction_history_screen.dart';
+import 'screens/transaction_details_screen.dart';
+import 'screens/admin_transactions_screen.dart';
+import 'screens/report_screen.dart';
+import 'screens/my_rides_screen.dart';
+import 'screens/ride_details_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -63,10 +69,28 @@ class MyApp extends StatelessWidget {
                 builder: (context, state) {
                   final ticketId = int.tryParse(state.pathParameters['ticketId'] ?? '') ?? 0;
                   final ticketData = state.extra as Map<String, dynamic>?;
-
                   return TicketDetailsScreen(ticketId: ticketId, ticketData: ticketData);
                 },
               ),
+              GoRoute(path: '/transactions',builder: (context, state) => const MyTransactionsScreen()),
+              GoRoute(
+                path: '/transactions/:transactionId',
+                builder: (context, state) {
+                  final transactionId = int.tryParse(state.pathParameters['transactionId'] ?? '') ?? 0;
+                  final transactionData = state.extra as Map<String, dynamic>?;
+                  return TransactionDetailsScreen(transactionId: transactionId, transactionData: transactionData);
+                },
+              ),
+              GoRoute(path: '/ride-history', builder: (context, state) => const MyRidesScreen()),
+              GoRoute(
+                path: '/rides/:id',
+                builder: (context, state) {
+                  final ride = state.extra as Map<String, dynamic>?;
+                  final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                  return RideDetailsScreen(rideId: id, rideData: ride);
+                },
+              ),
+
               // driver
               GoRoute(path: '/driver-home', builder: (context, state) => const DriverHomeScreen()),
               GoRoute(path: '/scan-qr', builder: (context, state) => const ScanQRScreen()),
@@ -92,6 +116,19 @@ class MyApp extends StatelessWidget {
                   return EditBusScreen(busId: busId); // Truyền busId
                 },
               ),
+              GoRoute(
+                path: '/admin-register',
+                builder: (context, state) => const AdminRegisterScreen(),
+              ),
+              GoRoute(
+                path: '/admin/transactions',
+                builder: (context, state) => const AdminTransactionsScreen(),
+              ),
+              GoRoute(
+                path: '/admin/report',
+                builder: (context, state) => const ReportScreen(),
+              ),
+
             ],
           ),
         );

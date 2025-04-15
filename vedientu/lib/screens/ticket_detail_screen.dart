@@ -1,7 +1,8 @@
-import 'dart:convert'; // Dùng để giải mã Base64
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // 🆕 Dùng để định dạng tiền và ngày giờ
 
 class TicketDetailsScreen extends StatefulWidget {
   final int ticketId;
@@ -33,16 +34,10 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
 
   Future<void> fetchTicketDetails() async {
     try {
-      print("🔍 Đang gửi request API với ticketId: ${widget.ticketId}");
-
       final response = await http.get(Uri.parse('http://localhost:8080/user/tickets/${widget.ticketId}'));
-
-      print("📩 Response status: ${response.statusCode}");
-      print("📦 Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("✅ Dữ liệu nhận được: $data");
 
         setState(() {
           ticketData = data;
@@ -50,18 +45,41 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
           hasError = false;
         });
       } else {
-        print("❌ Lỗi API: ${response.statusCode}");
         setState(() {
           isLoading = false;
           hasError = true;
         });
       }
     } catch (e) {
-      print("🔥 Lỗi khi gọi API: $e");
       setState(() {
         isLoading = false;
         hasError = true;
       });
+    }
+  }
+
+  String _formatPrice(double price) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+    return formatter.format(price);
+  }
+
+  String _formatDate(String rawDate) {
+    try {
+      final date = DateTime.parse(rawDate);
+      return DateFormat('dd/MM/yyyy HH:mm').format(date);
+    } catch (_) {
+      return 'Không hợp lệ';
+    }
+  }
+
+  int _calculateDaysLeft(String expiryDate) {
+    try {
+      final expiry = DateTime.parse(expiryDate);
+      final now = DateTime.now();
+      final difference = expiry.difference(now).inDays;
+      return difference > 0 ? difference : 0;  // Nếu hết hạn rồi thì trả về 0
+    } catch (_) {
+      return 0;  // Nếu có lỗi, trả về 0
     }
   }
 
@@ -80,7 +98,6 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
       );
     }
 
-    // 🏷 Lấy dữ liệu từ API
     final String ticketType = ticketData?['ticketType'] ?? 'N/A';
     final int remainingRides = ticketData?['remainingRides'] ?? 0;
     final double price = ticketData?['price']?.toDouble() ?? 0.0;
@@ -88,7 +105,6 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
     final String expiryDate = ticketData?['expiryDate'] ?? 'N/A';
     final String qrCodeBase64 = ticketData?['qrCode'] ?? '';
 
-    // 📷 Chuyển đổi mã QR từ Base64 thành hình ảnh
     Uint8List? qrCodeBytes;
     if (qrCodeBase64.isNotEmpty) {
       qrCodeBytes = base64Decode(qrCodeBase64);
@@ -103,17 +119,17 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
           children: [
             Text('🆔 Mã vé: ${widget.ticketId}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             Text('🎫 Loại vé: $ticketType'),
-            Text('⏳ Số lượt còn lại: $remainingRides'),
-            Text('💰 Giá: ${price.toStringAsFixed(2)} VNĐ'),
-            Text('📅 Ngày mua: $purchaseDate'),
-            Text('📆 Hạn sử dụng: $expiryDate'),
+            Text(
+              ticketType == 'MONTHLY'
+                  ? '📅 Hạn sử dụng còn lại: ${_calculateDaysLeft(expiryDate)} ngày'
+                  : '⏳ Số lượt còn lại: $remainingRides',
+            ),
+            Text('💰 Giá: ${_formatPrice(price)}'),
+            Text('📅 Ngày mua: ${_formatDate(purchaseDate)}'),
+            Text('📆 Hạn sử dụng: ${_formatDate(expiryDate)}'),
             const SizedBox(height: 20),
-
-            // 🖼️ Hiển thị ảnh QR nếu có
             if (qrCodeBytes != null)
-              Center(
-                child: Image.memory(qrCodeBytes, width: 200, height: 200),
-              )
+              Center(child: Image.memory(qrCodeBytes, width: 200, height: 200))
             else
               const Center(child: Text('⚠️ Không có mã QR')),
           ],

@@ -10,7 +10,7 @@ class BuyTicketScreen extends StatefulWidget {
 }
 
 class _BuyTicketScreenState extends State<BuyTicketScreen> {
-  String _selectedTicketType = 'STANDARD'; // Mặc định là vé thường
+  String _selectedTicketType = 'SINGLE'; // Mặc định là vé đơn
   bool _isLoading = false;
 
   Future<void> _buyTicket() async {
@@ -61,7 +61,7 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
                   _selectedTicketType = newValue!;
                 });
               },
-              items: ['STANDARD', 'VIP', 'STUDENT'].map<DropdownMenuItem<String>>((String value) {
+              items: ['SINGLE', 'VIP', 'MONTHLY'].map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),

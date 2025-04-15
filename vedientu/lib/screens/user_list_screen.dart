@@ -18,6 +18,11 @@ class UserListScreenState extends State<UserListScreen> {
   String selectedRole = 'Tất cả';
   final List<String> roles = ['Tất cả', 'ADMIN', 'DRIVER', 'CUSTOMER'];
 
+  int totalUsers = 0;
+  int adminCount = 0;
+  int driverCount = 0;
+  int customerCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,8 +45,14 @@ class UserListScreenState extends State<UserListScreen> {
   }
 
   Future<void> _refreshUsers() async {
+    final users = await _apiService.getAllUsers();
+
     setState(() {
-      _userList = _apiService.getAllUsers();
+      _userList = Future.value(users);
+      totalUsers = users.length;
+      adminCount = users.where((u) => u['role'] == 'ADMIN').length;
+      driverCount = users.where((u) => u['role'] == 'DRIVER').length;
+      customerCount = users.where((u) => u['role'] == 'CUSTOMER').length;
     });
   }
 
@@ -71,7 +82,7 @@ class UserListScreenState extends State<UserListScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Xóa người dùng thành công')),
       );
-      _refreshUsers(); // Làm mới danh sách
+      _refreshUsers();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('❌ Không thể xóa người dùng')),
@@ -89,6 +100,13 @@ class UserListScreenState extends State<UserListScreen> {
           onPressed: () => context.go('/admin-home'),
         ),
       ),
+      floatingActionButton: _userRole == 'ADMIN'
+          ? FloatingActionButton.extended(
+              onPressed: () => context.go('/admin-register'),
+              icon: const Icon(Icons.person_add),
+              label: const Text('Tạo tài khoản mới'),
+            )
+          : null,
       body: _userRole != 'ADMIN'
           ? const Center(child: Text('🚫 Bạn không có quyền truy cập.'))
           : FutureBuilder<List<dynamic>>(
@@ -110,7 +128,9 @@ class UserListScreenState extends State<UserListScreen> {
                     : users.where((u) => u['role'] == selectedRole).toList();
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Bộ lọc vai trò
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: DropdownButton<String>(
@@ -128,6 +148,23 @@ class UserListScreenState extends State<UserListScreen> {
                         },
                       ),
                     ),
+
+                    // Thống kê tổng số người dùng
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('👥 Tổng số người dùng: $totalUsers', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text('🛡️ ADMIN: $adminCount'),
+                          Text('🚚 DRIVER: $driverCount'),
+                          Text('🙋 CUSTOMER: $customerCount'),
+                          const Divider(),
+                        ],
+                      ),
+                    ),
+
+                    // Danh sách người dùng
                     Expanded(
                       child: ListView.builder(
                         itemCount: filteredUsers.length,
@@ -166,7 +203,7 @@ class UserListScreenState extends State<UserListScreen> {
                                         _deleteUser(user['id']);
                                       },
                                     )
-                                  : null, // Không hiển thị nút xóa nếu người dùng là ADMIN
+                                  : null,
                             ),
                           );
                         },

@@ -3,7 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:convert'; 
+import 'package:petitparser/debug.dart';
+import 'dart:convert';
 class ApiService {
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/'));
 
@@ -23,6 +24,22 @@ class ApiService {
       return false;
     }
   }
+// Đăng ký tài khoản với role tùy chọn (dành cho admin)
+Future<bool> registerWithRole(String name, String email, String password, String phone, String role) async {
+  try {
+    final response = await _dio.post('auth/register', data: {
+      'fullName': name,
+      'email': email,
+      'password': password,
+      'phone': phone,
+      'role': role, // Cho phép chọn role CUSTOMER / DRIVER
+    });
+
+    return response.statusCode == 201;
+  } catch (e) {
+    return false;
+  }
+}
 
   // Đăng nhập
   Future<bool> login(String email, String password) async {
@@ -177,6 +194,91 @@ class ApiService {
       return false;
     }
   }
+
+// ✅ Lấy danh sách giao dịch
+Future<List<dynamic>> getTransactions() async {
+  try {
+    String? token = await getToken();
+    if (token == null) {
+      log('🚨 Không tìm thấy token!');
+      return [];
+    }
+
+    final response = await _dio.get(
+      '/user/transactions',  // API backend trả về tất cả giao dịch của user
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data;
+  } catch (e) {
+    log('❌ Lỗi lấy danh sách giao dịch: $e');
+    return [];
+  }
+}
+// lấy chi tiết giao dịch
+Future<Map<String, dynamic>?> getTransactionDetails(int transactionId) async {
+  try {
+    String? token = await getToken();
+    if (token == null) throw Exception('Không có token');
+
+    final response = await _dio.get(
+      'user/transaction/$transactionId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    if (response.statusCode == 200) return response.data;
+    throw Exception('Lỗi khi lấy chi tiết giao dịch');
+  } catch (e) {
+    log('❌ Lỗi chi tiết giao dịch: $e');
+    return null;
+  }
+}
+
+// lấy lịch sử chuyến đi
+Future<List<dynamic>> getRideHistory() async {
+  try {
+    String? token = await getToken();
+    if (token == null) {
+      log('🚨 Không tìm thấy token!');
+      return [];
+    }
+
+    final response = await _dio.get(
+      'user/ride-history', 
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data;
+  } catch (e) {
+    log('❌ Lỗi lấy danh sách chuyến đi: $e');
+    return [];
+  }
+}
+// chi tiết chuyến đi
+Future<Map<String, dynamic>?> getRideDetails(int rideId) async {
+  try {
+    String? token = await getToken(); // Hàm lấy token từ local storage hoặc SecureStorage
+    if (token == null) throw Exception('Không có token');
+
+    final response = await _dio.get(
+      'user/ride-history/$rideId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    if (response.statusCode == 200) {
+      return response.data;
+    } else {
+      throw Exception('Lỗi khi lấy chi tiết chuyến đi');
+    }
+  } catch (e) {
+    log('❌ Lỗi chi tiết chuyến đi: $e');
+    return null;
+  }
+}
+
+
+
+  // DRIVER
   // ✅ Hàm quét mã QR
   Future<Map<String, dynamic>?> scanDriverQR(String qrCode) async {
     try {
@@ -455,6 +557,60 @@ Future<bool> deleteBusById(int busId) async {
   } catch (e) {
     debugPrint('❌ Lỗi khi xóa xe buýt: $e');
     return false;
+  }
+}
+// lấy danh sách giao dịch cho admin
+Future<List<dynamic>> getAllTransactionsForAdmin() async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    if (token == null) throw Exception("Token not found");
+
+    final response = await _dio.get(
+      '/transactions',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    return response.data;
+  } catch (e) {
+    log('Lỗi khi lấy giao dịch admin: $e');
+    rethrow;
+  }
+}
+//report
+ Future<Map<String, dynamic>?> fetchReportSummary() async {
+  try {
+    // Lấy token từ SharedPreferences (nếu bạn lưu ở đó sau khi đăng nhập)
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      print("Không có token");
+      return null;
+    }
+
+    final response = await _dio.get(
+      '/reports/summary',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return response.data as Map<String, dynamic>;
+    } else {
+      print("Lỗi: ${response.statusCode}");
+      return null;
+    }
+  } catch (e) {
+    print("Lỗi khi gọi API: $e");
+    return null;
   }
 }
 

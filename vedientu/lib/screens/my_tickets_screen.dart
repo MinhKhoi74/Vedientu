@@ -48,6 +48,17 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
     }
   }
 
+  int _calculateDaysLeft(String expiryDateStr) {
+    try {
+      final expiryDate = DateTime.parse(expiryDateStr);
+      final now = DateTime.now();
+      final difference = expiryDate.difference(now).inDays;
+      return difference > 0 ? difference : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,19 +81,20 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: ListTile(
                         title: Text('Loại vé: ${ticket['ticketType']}'),
-                        subtitle: Text('Số lượt còn lại: ${ticket['remainingRides']}'),
+                        subtitle: Text(
+                          ticket['ticketType'] == 'MONTHLY'
+                              ? 'Hạn sử dụng còn lại: ${_calculateDaysLeft(ticket['expiryDate'])} ngày'
+                              : 'Số lượt còn lại: ${ticket['remainingRides']}',
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             ElevatedButton(
                               onPressed: () {
-                                print('Đang mở chi tiết vé: ${ticket['id']}'); // Debug ID vé
                                 context.push('/tickets/${ticket['id']}', extra: ticket);
                               },
                               child: const Text('Chi tiết'),
                             ),
-
-
                             const SizedBox(width: 8),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
