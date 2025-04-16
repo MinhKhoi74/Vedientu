@@ -311,8 +311,7 @@ Future<Map<String, dynamic>?> getRideDetails(int rideId) async {
   }
 
 
-  // danh sách hành khách
-  Future<List<dynamic>> getPassengers() async {
+Future<List<dynamic>> getPassengers() async {
   try {
     String? token = await getToken();
     if (token == null) {
@@ -330,9 +329,10 @@ Future<Map<String, dynamic>?> getRideDetails(int rideId) async {
     log('📩 API Response: ${response.statusCode} - ${response.data}');
 
     if (response.statusCode == 200) {
-      if (response.data is List) {
-        log('✅ Danh sách hành khách: ${response.data}');
-        return response.data;
+      // Trả về danh sách hành khách từ trường 'passengers'
+      if (response.data['passengers'] is List) {
+        log('✅ Danh sách hành khách: ${response.data['passengers']}');
+        return response.data['passengers'];
       } else {
         log('⚠️ Dữ liệu không phải danh sách hợp lệ: ${response.data}');
         return [];
@@ -346,6 +346,7 @@ Future<Map<String, dynamic>?> getRideDetails(int rideId) async {
     return [];
   }
 }
+
 
 // admin
 // ✅ Lấy danh sách người dùng (chỉ dành cho admin)

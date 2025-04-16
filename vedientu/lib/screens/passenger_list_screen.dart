@@ -22,11 +22,13 @@ class _PassengerListScreenState extends State<PassengerListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Danh sách hành khách'),
-      leading: IconButton(
+      appBar: AppBar(
+        title: const Text('Danh sách hành khách'),
+        leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/driver-home'), // Quay về trang chính
-        )),
+        ),
+      ),
       body: FutureBuilder<List<dynamic>>(
         future: _passengerList,
         builder: (context, snapshot) {
@@ -35,7 +37,6 @@ class _PassengerListScreenState extends State<PassengerListScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Lỗi: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            print('${snapshot.data}');
             return const Center(child: Text('Không có hành khách nào.'));
           }
 
@@ -44,6 +45,7 @@ class _PassengerListScreenState extends State<PassengerListScreen> {
             itemCount: passengers.length,
             itemBuilder: (context, index) {
               final passenger = passengers[index];
+
               return Card(
                 child: ListTile(
                   leading: const Icon(Icons.person),
