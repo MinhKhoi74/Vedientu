@@ -28,11 +28,13 @@ class _AddBusScreenState extends State<AddBusScreen> {
   }
 
   void fetchDrivers() async {
-    final data = await apiService.getAllDrivers();
-    setState(() {
-      drivers = data;
-    });
-  }
+  final data = await apiService.getAllDrivers();
+  setState(() {
+    // Lọc tài xế chưa được gán xe buýt (bus == null)
+    drivers = data.where((driver) => driver['bus'] == null).toList();
+  });
+}
+
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {

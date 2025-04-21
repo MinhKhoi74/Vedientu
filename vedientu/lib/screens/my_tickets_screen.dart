@@ -30,7 +30,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
   }
 
   Future<void> _cancelTicket(int ticketId) async {
-    bool success = await ApiService().cancelTicket(ticketId);
+    bool success = await ApiService().hiddenTicket(ticketId);
     if (!mounted) return;
 
     if (success) {
@@ -98,8 +98,30 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                             const SizedBox(width: 8),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _cancelTicket(ticket['id']),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Xác nhận hủy vé'),
+                                    content: const Text('Bạn có chắc chắn muốn hủy vé này không?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context), // Đóng hộp thoại
+                                        child: const Text('Không'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // Đóng hộp thoại
+                                          _cancelTicket(ticket['id']); // Gọi API hủy vé
+                                        },
+                                        child: const Text('Có'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
+
                           ],
                         ),
                       ),

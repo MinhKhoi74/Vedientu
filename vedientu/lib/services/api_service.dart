@@ -174,7 +174,7 @@ Future<bool> registerWithRole(String name, String email, String password, String
 
 
 // ✅ Hủy vé
-  Future<bool> cancelTicket(int ticketId) async {
+  Future<bool> hiddenTicket(int ticketId) async {
     try {
       String? token = await getToken();
       if (token == null) {
@@ -182,8 +182,8 @@ Future<bool> registerWithRole(String name, String email, String password, String
         return false;
       }
 
-      final response = await _dio.delete(
-        'user/tickets/$ticketId',
+      final response = await _dio.put(
+        'user/tickets/$ticketId/cancel',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -310,43 +310,119 @@ Future<Map<String, dynamic>?> getRideDetails(int rideId) async {
     }
   }
 
-
-Future<List<dynamic>> getPassengers() async {
+// mở chuyến đi
+Future<Map<String, dynamic>?> openTrip() async {
   try {
     String? token = await getToken();
     if (token == null) {
-      log('🚨 Không tìm thấy token!');
-      return [];
+      log('🚨 Token không tồn tại!');
+      return null;
     }
 
-    log('🔄 Gửi request lấy danh sách hành khách...');
-    
-    final response = await _dio.get(
-      'driver/passengers',
+    final response = await _dio.post(
+      'driver/open-trip',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    log('📩 API Response: ${response.statusCode} - ${response.data}');
-
-    if (response.statusCode == 200) {
-      // Trả về danh sách hành khách từ trường 'passengers'
-      if (response.data['passengers'] is List) {
-        log('✅ Danh sách hành khách: ${response.data['passengers']}');
-        return response.data['passengers'];
-      } else {
-        log('⚠️ Dữ liệu không phải danh sách hợp lệ: ${response.data}');
-        return [];
-      }
-    } else {
-      log('⚠️ Không có hành khách hoặc lỗi API');
-      return [];
-    }
+    log('🚀 Mở chuyến - Response: ${response.statusCode} - ${response.data}');
+    return response.data;
   } catch (e) {
-    log('❌ Lỗi khi lấy danh sách hành khách: $e');
-    return [];
+    log('❌ Lỗi khi mở chuyến: $e');
+    return null;
+  }
+}
+// đóng chuyến đi
+Future<Map<String, dynamic>?> closeTrip() async {
+  try {
+    String? token = await getToken();
+    if (token == null) {
+      log('🚨 Token không tồn tại!');
+      return null;
+    }
+
+    final response = await _dio.post(
+      'driver/close-trip',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    log('🛑 Đóng chuyến - Response: ${response.statusCode} - ${response.data}');
+    return response.data;
+  } catch (e) {
+    log('❌ Lỗi khi đóng chuyến: $e');
+    return null;
+  }
+}
+// lấy danh sách chuyến đi + hành khách của tài xế
+Future<Map<String, dynamic>> getRidesHistory() async {
+  try {
+    String? token = await getToken();
+    if (token == null) {
+      log('🚨 Token không tồn tại!');
+      return {};
+    }
+
+    final response = await _dio.get(
+      'driver/ride-history',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    log('🕘 Danh sách chuyến đi: ${response.statusCode} - ${response.data}');
+    return response.data as Map<String, dynamic>;
+  } catch (e) {
+    log('❌ Lỗi khi lấy danh sách chuyến đi: $e');
+    return {};
   }
 }
 
+// lấy hành khách của chuyến đi theo tripId
+Future<List<dynamic>> getPassengersByTripId(int tripId) async {
+  try {
+    String? token = await getToken();
+    if (token == null) {
+      log('🚨 Token không tồn tại!');
+      return [];
+    }
+
+    final response = await _dio.get(
+      'driver/passengers',
+      queryParameters: {'tripId': tripId},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    log('👥 Hành khách chuyến $tripId: ${response.statusCode} - ${response.data}');
+
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return response.data['passengers'] ?? [];
+    } else {
+      log('⚠️ Không có hành khách hợp lệ hoặc lỗi response.');
+      return [];
+    }
+  } catch (e) {
+    log('❌ Lỗi khi lấy hành khách theo tripId: $e');
+    return [];
+  }
+}
+// trạng thái của chuyến đi (mở hay đóng)
+Future<bool> getTripStatus() async {
+  try {
+    String? token = await getToken();
+    if (token == null) return false;
+
+    final response = await _dio.get(
+      'driver/trip-status',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    if (response.statusCode == 200 && response.data['success'] == true) {
+      return response.data['tripOpen'] == true;
+    }
+
+    return false;
+  } catch (e) {
+    log('❌ Lỗi khi kiểm tra trạng thái chuyến: $e');
+    return false;
+  }
+}
 
 // admin
 // ✅ Lấy danh sách người dùng (chỉ dành cho admin)

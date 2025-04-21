@@ -3,10 +3,12 @@ import '../services/api_service.dart';
 import 'package:go_router/go_router.dart';
 
 class PassengerListScreen extends StatefulWidget {
-  const PassengerListScreen({Key? key}) : super(key: key);
+  final int tripId;
+
+  const PassengerListScreen({Key? key, required this.tripId}) : super(key: key);
 
   @override
-  _PassengerListScreenState createState() => _PassengerListScreenState();
+  State<PassengerListScreen> createState() => _PassengerListScreenState();
 }
 
 class _PassengerListScreenState extends State<PassengerListScreen> {
@@ -16,17 +18,17 @@ class _PassengerListScreenState extends State<PassengerListScreen> {
   @override
   void initState() {
     super.initState();
-    _passengerList = _apiService.getPassengers();
+    _passengerList = _apiService.getPassengersByTripId(widget.tripId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Danh sách hành khách'),
+        title: Text('Hành khách chuyến ${widget.tripId}'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/driver-home'), // Quay về trang chính
+          onPressed: () => context.go('/driver-trip'),
         ),
       ),
       body: FutureBuilder<List<dynamic>>(
@@ -55,7 +57,6 @@ class _PassengerListScreenState extends State<PassengerListScreen> {
                     children: [
                       Text('Mã hành khách: ${passenger['passengerId'] ?? 'Không có'}'),
                       Text('Mã vé: ${passenger['ticketId'] ?? 'Không có'}'),
-                      Text('Lộ trình: ${passenger['route'] ?? 'Không xác định'}'),
                       Text('Thời gian: ${passenger['rideTime'] ?? 'Chưa có thông tin'}'),
                     ],
                   ),

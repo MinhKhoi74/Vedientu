@@ -2,17 +2,42 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'edit_bus_screen.dart';
 
-class BusDetailScreen extends StatelessWidget {
+class BusDetailScreen extends StatefulWidget {
   final String busId;
   final dynamic bus;
 
-  BusDetailScreen({
+  const BusDetailScreen({
     Key? key,
     required this.busId,
     required this.bus,
   }) : super(key: key);
 
+  @override
+  State<BusDetailScreen> createState() => _BusDetailScreenState();
+}
+
+class _BusDetailScreenState extends State<BusDetailScreen> {
   final ApiService _apiService = ApiService();
+  Map<String, dynamic>? assignedDriver;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAssignedDriver();
+  }
+
+  void fetchAssignedDriver() async {
+    final data = await _apiService.getAllDrivers();
+    final int currentBusId = widget.bus['id'];
+    final driver = data.firstWhere(
+      (d) => d['bus'] != null && d['bus']['id'] == currentBusId,
+      orElse: () => null,
+    );
+
+    setState(() {
+      assignedDriver = driver;
+    });
+  }
 
   Future<void> _deleteBus(BuildContext context, String busId) async {
     final int parsedBusId = int.tryParse(busId) ?? -1;
@@ -58,12 +83,11 @@ class BusDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int busIdInt = bus['id'];
-    final String licensePlate = bus['licensePlate'];
-    final String model = bus['model'];
-    final int capacity = bus['capacity'];
-    final String route = bus['route'];
-    final driver = bus['driver'];
+    final int busIdInt = widget.bus['id'];
+    final String licensePlate = widget.bus['licensePlate'];
+    final String model = widget.bus['model'];
+    final int capacity = widget.bus['capacity'];
+    final String route = widget.bus['route'];
 
     return Scaffold(
       appBar: AppBar(
@@ -81,12 +105,12 @@ class BusDetailScreen extends StatelessWidget {
             Text('Sức chứa: $capacity'),
             Text('Tuyến đường: $route'),
             const SizedBox(height: 16),
-            driver != null
+            assignedDriver != null
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Tài xế: ${driver['fullName']}'),
-                      Text('ID Tài xế: ${driver['id']}'),
+                      Text('Tài xế: ${assignedDriver!['fullName']}'),
+                      Text('ID Tài xế: ${assignedDriver!['id']}'),
                     ],
                   )
                 : const Text('❌ Chưa có tài xế'),
@@ -109,7 +133,7 @@ class BusDetailScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () => _deleteBus(context, busId),
+                  onPressed: () => _deleteBus(context, widget.busId),
                   child: const Text('Xóa'),
                 ),
               ],

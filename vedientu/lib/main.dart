@@ -24,6 +24,9 @@ import 'screens/admin_transactions_screen.dart';
 import 'screens/report_screen.dart';
 import 'screens/my_rides_screen.dart';
 import 'screens/ride_details_screen.dart';
+import 'screens/driver_trip_list_screen.dart';
+import 'screens/driver_profile_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -93,8 +96,17 @@ class MyApp extends StatelessWidget {
 
               // driver
               GoRoute(path: '/driver-home', builder: (context, state) => const DriverHomeScreen()),
+              GoRoute(path: '/driver-profile', builder: (context, state) => const DriverProfilePage()),
               GoRoute(path: '/scan-qr', builder: (context, state) => const ScanQRScreen()),
-              GoRoute(path: '/passenger-list', builder: (context, state) => const PassengerListScreen()),
+              GoRoute(path: '/driver-trip', builder: (context, state) => const DriverTripListScreen()),
+              GoRoute(
+                      path: '/passenger-list',
+                      builder: (context, state) {
+                      final extra = state.extra as Map<String, dynamic>;
+                      return PassengerListScreen(tripId: extra['tripId']);
+                },
+),
+
               // admin
               GoRoute(path: '/admin-home', builder: (context, state) => const AdminHomeScreen()),
               GoRoute(path: '/users', builder: (context, state) => const UserListScreen()),
