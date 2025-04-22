@@ -72,7 +72,7 @@ class _BusDetailScreenState extends State<BusDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✅ Xóa xe buýt thành công')),
         );
-        Navigator.of(context).pop(true); // Thông báo cần reload
+        Navigator.of(context).pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('❌ Xóa xe buýt thất bại')),
@@ -92,49 +92,96 @@ class _BusDetailScreenState extends State<BusDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chi Tiết Xe Buýt'),
+        centerTitle: true,
+        elevation: 2,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ID xe buýt: $busIdInt', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text('Biển số: $licensePlate'),
-            Text('Mẫu xe: $model'),
-            Text('Sức chứa: $capacity'),
-            Text('Tuyến đường: $route'),
-            const SizedBox(height: 16),
-            assignedDriver != null
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Tài xế: ${assignedDriver!['fullName']}'),
-                      Text('ID Tài xế: ${assignedDriver!['id']}'),
-                    ],
-                  )
-                : const Text('❌ Chưa có tài xế'),
-            const SizedBox(height: 20),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(Icons.directions_bus, size: 60, color: Colors.blue.shade700),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Biển số: $licensePlate',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Mẫu xe: $model',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                    const Divider(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Icon(Icons.people, color: Colors.green),
+                        Text('Sức chứa: $capacity'),
+                        const Icon(Icons.route, color: Colors.orange),
+                        Expanded(child: Text('Tuyến: $route', textAlign: TextAlign.end)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    assignedDriver != null
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('🧑‍✈️ Tài xế phụ trách:',
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6),
+                                Text('👤 Họ tên: ${assignedDriver!['fullName']}'),
+                                Text('🆔 Mã tài xế: ${assignedDriver!['id']}'),
+                              ],
+                            ),
+                          )
+                        : const Text('❌ Xe này chưa có tài xế phụ trách',
+                            style: TextStyle(color: Colors.redAccent)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
             Row(
               children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => EditBusScreen(busId: busIdInt),
-                      ),
-                    );
-                    if (result == true) {
-                      Navigator.of(context).pop(true); // Báo về cần reload
-                    }
-                  },
-                  child: const Text('Chỉnh sửa'),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => EditBusScreen(busId: busIdInt),
+                        ),
+                      );
+                      if (result == true) {
+                        Navigator.of(context).pop(true);
+                      }
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Chỉnh sửa'),
+                  ),
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () => _deleteBus(context, widget.busId),
-                  child: const Text('Xóa'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _deleteBus(context, widget.busId),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Xóa'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
                 ),
               ],
             ),

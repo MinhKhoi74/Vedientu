@@ -439,7 +439,7 @@ Future<List<dynamic>> getAllUsers() async {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    debugPrint('📡 Raw Response: ${response.data}');
+    // debugPrint('📡 Raw Response: ${response.data}');
 
     if (response.statusCode == 200) {
       return response.data as List<dynamic>;
@@ -466,7 +466,7 @@ Future<List<dynamic>> getAllDrivers() async {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    debugPrint('📡 Raw Response: ${response.data}');
+    // debugPrint('📡 Raw Response: ${response.data}');
 
     if (response.statusCode == 200) {
       final List<dynamic> users = response.data;
@@ -524,8 +524,8 @@ Future<bool> addBusWithDriver(String licensePlate, String model, int capacity, S
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    debugPrint('🚌 Thêm xe buýt kèm tài xế: ${response.statusCode}');
-    debugPrint('📦 Response body: ${response.data}');
+    // debugPrint('🚌 Thêm xe buýt kèm tài xế: ${response.statusCode}');
+    // debugPrint('📦 Response body: ${response.data}');
 
     // Chấp nhận cả 200 hoặc 201 là thành công
     return response.statusCode == 201 || response.statusCode == 200;
@@ -550,7 +550,7 @@ Future<List<dynamic>> getBuses() async {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    debugPrint('🚍 Lấy danh sách xe buýt: ${response.statusCode}');
+    // debugPrint('🚍 Lấy danh sách xe buýt: ${response.statusCode}');
     if (response.statusCode == 200) {
       return response.data; // Trả về danh sách xe buýt
     } else {
@@ -575,7 +575,7 @@ Future<Map<String, dynamic>?> getBusById(int busId) async {
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
-    debugPrint('🚍 Lấy thông tin xe buýt ID $busId: ${response.statusCode}');
+    // debugPrint('🚍 Lấy thông tin xe buýt ID $busId: ${response.statusCode}');
     if (response.statusCode == 200) {
       return response.data; // Trả về thông tin chi tiết xe buýt
     } else {

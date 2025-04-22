@@ -95,14 +95,11 @@ class UserListScreenState extends State<UserListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Danh sách người dùng'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/admin-home'),
-        ),
+        centerTitle: true,
       ),
       floatingActionButton: _userRole == 'ADMIN'
           ? FloatingActionButton.extended(
-              onPressed: () => context.go('/admin-register'),
+              onPressed: () => context.push('/admin-register'),
               icon: const Icon(Icons.person_add),
               label: const Text('Tạo tài khoản mới'),
             )
@@ -130,24 +127,7 @@ class UserListScreenState extends State<UserListScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Bộ lọc vai trò
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: DropdownButton<String>(
-                        value: selectedRole,
-                        items: roles.map((role) {
-                          return DropdownMenuItem<String>(
-                            value: role,
-                            child: Text(role),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedRole = value!;
-                          });
-                        },
-                      ),
-                    ),
+
 
                     // Thống kê tổng số người dùng
                     Padding(
@@ -155,15 +135,58 @@ class UserListScreenState extends State<UserListScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('👥 Tổng số người dùng: $totalUsers', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('🛡️ ADMIN: $adminCount'),
-                          Text('🚚 DRIVER: $driverCount'),
-                          Text('🙋 CUSTOMER: $customerCount'),
-                          const Divider(),
+                          Text('👥 Tổng số người dùng: $totalUsers', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromRGBO(4, 53, 109, 1)),),
+                          Row(
+                            children: [
+                              _buildStatCard('🛡️ ADMIN: $adminCount', const Color.fromARGB(255, 1, 61, 111)),
+                              _buildStatCard('🚚 DRIVER: $driverCount', const Color.fromARGB(255, 74, 45, 1)),
+                              _buildStatCard('🙋 CUSTOMER: $customerCount', const Color.fromARGB(255, 1, 85, 4)),
+                            ],
+                          ),
                         ],
                       ),
                     ),
+                     // Bộ lọc vai trò
+Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.blueAccent, width: 2),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          spreadRadius: 2,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: DropdownButton<String>(
+      value: selectedRole,
+      isExpanded: true, // Make the dropdown expand to fill the container
+      iconEnabledColor: Colors.blueAccent, // Set the dropdown icon color
+      style: TextStyle(color: Colors.black, fontSize: 16), // Text style for the dropdown
+      underline: SizedBox(), // Remove the default underline
+      items: roles.map((role) {
+        return DropdownMenuItem<String>(
+          value: role,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Text(role),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          selectedRole = value!;
+        });
+      },
+    ),
+  ),
+),
 
+                      const Divider(),
                     // Danh sách người dùng
                     Expanded(
                       child: ListView.builder(
@@ -175,6 +198,11 @@ class UserListScreenState extends State<UserListScreen> {
                           final userRole = user['role'] ?? 'Không xác định';
 
                           return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: ListTile(
                               leading: Icon(
                                 userRole == 'ADMIN'
@@ -188,7 +216,7 @@ class UserListScreenState extends State<UserListScreen> {
                                         ? Colors.orange
                                         : Colors.grey,
                               ),
-                              title: Text(userName),
+                              title: Text(userName, style: TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -213,6 +241,19 @@ class UserListScreenState extends State<UserListScreen> {
                 );
               },
             ),
+    );
+  }
+
+  Widget _buildStatCard(String text, Color color) {
+    return Expanded(
+      child: Card(
+        color: color.withOpacity(0.2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+        ),
+      ),
     );
   }
 }

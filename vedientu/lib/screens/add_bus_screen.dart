@@ -28,13 +28,11 @@ class _AddBusScreenState extends State<AddBusScreen> {
   }
 
   void fetchDrivers() async {
-  final data = await apiService.getAllDrivers();
-  setState(() {
-    // Lọc tài xế chưa được gán xe buýt (bus == null)
-    drivers = data.where((driver) => driver['bus'] == null).toList();
-  });
-}
-
+    final data = await apiService.getAllDrivers();
+    setState(() {
+      drivers = data.where((driver) => driver['bus'] == null).toList();
+    });
+  }
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -53,68 +51,107 @@ class _AddBusScreenState extends State<AddBusScreen> {
 
       if (success) {
         Fluttertoast.showToast(msg: '✅ Thêm xe buýt thành công!');
-        Navigator.pop(context, true); // ← Trả về thành công
+        Navigator.pop(context, true);
       } else {
         Fluttertoast.showToast(msg: '❌ Thêm xe buýt thất bại!');
       }
     }
   }
 
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      filled: true,
+      fillColor: Colors.grey[100],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Thêm xe buýt')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Biển số'),
-                validator: (value) => value!.isEmpty ? 'Không để trống' : null,
-                onChanged: (value) => licensePlate = value,
+      appBar: AppBar(
+        title: const Text('Thêm xe buýt'),
+        centerTitle: true,
+        backgroundColor: Colors.blue.shade700,
+      ),
+      body: Center(
+        child: Card(
+          elevation: 8,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      decoration: _inputDecoration('Biển số', Icons.directions_bus),
+                      validator: (value) => value!.isEmpty ? 'Không để trống' : null,
+                      onChanged: (value) => licensePlate = value,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: _inputDecoration('Model', Icons.build),
+                      validator: (value) => value!.isEmpty ? 'Không để trống' : null,
+                      onChanged: (value) => model = value,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: _inputDecoration('Sức chứa', Icons.event_seat),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Không để trống' : null,
+                      onChanged: (value) => capacity = int.tryParse(value) ?? 0,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: _inputDecoration('Tuyến xe', Icons.route),
+                      validator: (value) => value!.isEmpty ? 'Không để trống' : null,
+                      onChanged: (value) => route = value,
+                    ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<int>(
+                      decoration: _inputDecoration('Chọn tài xế', Icons.person),
+                      value: selectedDriverId,
+                      items: drivers.map((driver) {
+                        return DropdownMenuItem<int>(
+                          value: driver['id'],
+                          child: Text(driver['fullName']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDriverId = value;
+                        });
+                      },
+                      validator: (value) =>
+                          value == null ? 'Vui lòng chọn tài xế' : null,
+                    ),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.add, color:Colors.white,),
+                        label: const Text('Thêm xe buýt', style: TextStyle(fontSize: 16, color: Colors.white)),
+                        onPressed: submitForm,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          
+                          backgroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          textStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Model'),
-                validator: (value) => value!.isEmpty ? 'Không để trống' : null,
-                onChanged: (value) => model = value,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Sức chứa'),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Không để trống' : null,
-                onChanged: (value) => capacity = int.tryParse(value) ?? 0,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Tuyến xe'),
-                validator: (value) => value!.isEmpty ? 'Không để trống' : null,
-                onChanged: (value) => route = value,
-              ),
-              SizedBox(height: 20),
-              DropdownButtonFormField<int>(
-                decoration: InputDecoration(labelText: 'Chọn tài xế'),
-                value: selectedDriverId,
-                items: drivers.map((driver) {
-                  return DropdownMenuItem<int>(
-                    value: driver['id'],
-                    child: Text(driver['fullName']),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedDriverId = value;
-                  });
-                },
-                validator: (value) =>
-                    value == null ? 'Vui lòng chọn tài xế' : null,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: submitForm,
-                child: Text('Thêm xe buýt'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

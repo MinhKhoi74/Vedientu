@@ -70,7 +70,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✅ Cập nhật thành công')),
         );
-        Navigator.of(context).pop(true); // ✅ Trả kết quả thành công
+        Navigator.of(context).pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('❌ Cập nhật thất bại')),
@@ -82,64 +82,119 @@ class _EditBusScreenState extends State<EditBusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chỉnh sửa Xe Buýt')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                initialValue: _licensePlate,
-                decoration: const InputDecoration(labelText: 'Biển số'),
-                onChanged: (value) => _licensePlate = value,
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Vui lòng nhập biển số' : null,
+      appBar: AppBar(title: const Text('Cập Nhật Thông Tin Xe Buýt')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Thông Tin Xe Buýt',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      label: 'Biển số',
+                      initialValue: _licensePlate,
+                      onChanged: (val) => _licensePlate = val,
+                      validatorText: 'Vui lòng nhập biển số',
+                      icon: Icons.confirmation_number,
+                    ),
+                    _buildTextField(
+                      label: 'Mẫu xe',
+                      initialValue: _model,
+                      onChanged: (val) => _model = val,
+                      validatorText: 'Vui lòng nhập mẫu xe',
+                      icon: Icons.directions_bus,
+                    ),
+                    _buildTextField(
+                      label: 'Sức chứa',
+                      initialValue: _capacity.toString(),
+                      onChanged: (val) => _capacity = int.tryParse(val) ?? 0,
+                      validatorText: 'Vui lòng nhập sức chứa',
+                      keyboardType: TextInputType.number,
+                      icon: Icons.event_seat,
+                    ),
+                    _buildTextField(
+                      label: 'Tuyến đường',
+                      initialValue: _route,
+                      onChanged: (val) => _route = val,
+                      validatorText: 'Vui lòng nhập tuyến đường',
+                      icon: Icons.alt_route,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(
+                        labelText: 'Tài xế',
+                        prefixIcon: Icon(Icons.person),
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _selectedDriverId,
+                      items: _drivers.map((driver) {
+                        return DropdownMenuItem<int>(
+                          value: driver['id'],
+                          child: Text(driver['fullName']),
+                        );
+                      }).toList(),
+                      onChanged: (value) => setState(() => _selectedDriverId = value),
+                      validator: (value) =>
+                          value == null ? 'Vui lòng chọn tài xế' : null,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _saveChanges,
+                        icon: const Icon(Icons.save),
+                        label: const Text('Lưu thay đổi'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          textStyle: const TextStyle(fontSize: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              TextFormField(
-                initialValue: _model,
-                decoration: const InputDecoration(labelText: 'Mẫu xe'),
-                onChanged: (value) => _model = value,
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Vui lòng nhập mẫu xe' : null,
-              ),
-              TextFormField(
-                initialValue: _capacity.toString(),
-                decoration: const InputDecoration(labelText: 'Sức chứa'),
-                keyboardType: TextInputType.number,
-                onChanged: (value) => _capacity = int.tryParse(value) ?? 0,
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Vui lòng nhập sức chứa' : null,
-              ),
-              TextFormField(
-                initialValue: _route,
-                decoration: const InputDecoration(labelText: 'Tuyến đường'),
-                onChanged: (value) => _route = value,
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'Vui lòng nhập tuyến đường' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Tài xế'),
-                value: _selectedDriverId,
-                items: _drivers.map((driver) {
-                  return DropdownMenuItem<int>(
-                    value: driver['id'],
-                    child: Text(driver['fullName']),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _selectedDriverId = value),
-                validator: (value) =>
-                    value == null ? 'Vui lòng chọn tài xế' : null,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _saveChanges,
-                child: const Text('Lưu thay đổi'),
-              ),
-            ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String initialValue,
+    required Function(String) onChanged,
+    required String validatorText,
+    TextInputType keyboardType = TextInputType.text,
+    IconData? icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        initialValue: initialValue,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icon != null ? Icon(icon) : null,
+          border: const OutlineInputBorder(),
+        ),
+        keyboardType: keyboardType,
+        onChanged: onChanged,
+        validator: (value) =>
+            (value == null || value.isEmpty) ? validatorText : null,
       ),
     );
   }
