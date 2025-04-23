@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
-
+import 'my_tickets_screen.dart';
+import 'my_rides_screen.dart';
+import 'transaction_history_screen.dart';
+import 'user_profile_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -10,10 +13,27 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
   String? token;
   Map<String, dynamic>? userProfile;
   List<dynamic> tickets = [];
   bool isLoading = true;
+
+  final List<Widget> _screens = [
+    MyTicketsScreen(), // Màn hình danh sách vé đã mua
+    MyTicketsScreen(), // Màn hình danh sách vé
+    MyRidesScreen(), // Lịch sử chuyến đi
+    MyTransactionsScreen(), // Lịch sử giao dịch
+    UserProfilePage(), // Thông tin tài khoản
+  ];
+
+  final List<String> _titles = [
+    "Trang chủ",
+    "Danh sách vé",
+    "Lịch sử chuyến đi",
+    "Lịch sử giao dịch",
+    "Thông tin tài khoản",
+  ];
 
   @override
   void initState() {
@@ -48,104 +68,108 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Tính số ngày còn lại với vé tháng
-  int _calculateDaysLeft(String expiryDateStr) {
-    try {
-      final expiryDate = DateTime.parse(expiryDateStr);
-      final now = DateTime.now();
-      final difference = expiryDate.difference(now).inDays;
-      return difference > 0 ? difference : 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
   // Đăng xuất
   Future<void> _logout(BuildContext context) async {
     await ApiService().logout(context);
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Xin chào ${userProfile?['fullName'] ?? 'Người dùng'}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(85),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
           ),
-        ],
+          child: AppBar(
+            toolbarHeight: 85,
+            backgroundColor: const Color.fromRGBO(42, 158, 207, 1),
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    size: 30,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Xin chào ${userProfile?['fullName'] ?? 'Người dùng'}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '📧 Email: ${userProfile?['email'] ?? 'Không có email'}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Đăng xuất',
+                onPressed: () => _logout(context),
+              ),
+            ],
+          ),
+        ),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : token == null
-              ? const Center(child: Text('Vui lòng đăng nhập'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (userProfile != null) ...[
-                        Text(
-                          '📧 Email: ${userProfile!['email'] ?? 'Không có email'}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      const Text(
-                        '🎟️ Danh sách vé đã mua:',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Expanded(
-                        child: tickets.isEmpty
-                            ? const Center(child: Text('Bạn chưa mua vé nào.'))
-                            : ListView.builder(
-                                itemCount: tickets.length,
-                                itemBuilder: (context, index) {
-                                  final ticket = tickets[index];
-                                  final ticketType = ticket['ticketType'] ?? 'Không rõ';
-
-                                  final subtitle = ticketType == 'MONTHLY'
-                                      ? 'Hạn sử dụng còn lại: ${_calculateDaysLeft(ticket['expiryDate'])} ngày'
-                                      : 'Số lượt còn lại: ${ticket['remainingRides'] ?? 'Chưa cập nhật'}';
-
-                                  return ListTile(
-                                    title: Text('Loại vé: $ticketType'),
-                                    subtitle: Text(subtitle),
-                                    trailing: ElevatedButton(
-                                      onPressed: () =>
-                                          context.push('/tickets/${ticket['id']}', extra: ticket),
-                                      child: const Text('Chi tiết'),
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => context.go('/buy-ticket'),
-                        child: const Text('Mua vé mới'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/tickets'),
-                        child: const Text('Danh sách vé'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/ride-history'),
-                        child: const Text('Lịch sử chuyến đi'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/transactions'),
-                        child: const Text('Lịch sử giao dịch'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/profile'),
-                        child: const Text('Thông tin tài khoản'),
-                      ),
-                    ],
-                  ),
-                ),
+          : _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: const Color.fromARGB(179, 0, 0, 0),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Trang chủ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Danh sách vé',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Lịch sử chuyến đi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'Lịch sử giao dịch',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Thông tin tài khoản',
+          ),
+        ],
+      ),
     );
   }
 }

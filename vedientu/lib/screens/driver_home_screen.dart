@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import 'scan_qr_screen.dart';
+import 'driver_profile_screen.dart';
+import 'driver_trip_list_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
 
   @override
-  DriverHomeScreenState createState() => DriverHomeScreenState();
+  State<DriverHomeScreen> createState() => _DriverHomeScreenState();
 }
 
-class DriverHomeScreenState extends State<DriverHomeScreen> {
-  String? token;
+class _DriverHomeScreenState extends State<DriverHomeScreen> {
+  int _selectedIndex = 0;
   Map<String, dynamic>? userProfile;
   bool isLoading = true;
-  bool isTripOpen = false; // ✅ Trạng thái chuyến đi
+  bool isTripOpen = false;
+
+  final List<Widget> _screens = [
+    const DriverTripListScreen(),
+    const ScanQRScreen(),
+    const DriverProfilePage(),
+  ];
+
+  final List<String> _titles = [
+    "Danh sách hành khách",
+    "Quét mã QR",
+    "Trang cá nhân",
+  ];
 
   @override
   void initState() {
@@ -23,26 +37,142 @@ class DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Future<void> _loadData() async {
     setState(() => isLoading = true);
-
-    token = await ApiService().getToken();
-    if (token == null) {
-      if (!mounted) return;
-      context.go('/driver-home');
-      return;
-    }
-
     try {
-      userProfile = await ApiService().getUserProfile();
-
-      // ✅ Gọi thêm API lấy trạng thái chuyến đi
-      bool tripStatus = await ApiService().getTripStatus();
-      isTripOpen = tripStatus;
+      final profile = await ApiService().getUserProfile();
+      final tripStatus = await ApiService().getTripStatus();
+      if (!mounted) return;
+      setState(() {
+        userProfile = profile;
+        isTripOpen = tripStatus;
+        isLoading = false;
+      });
     } catch (e) {
       debugPrint('❌ Lỗi khi tải dữ liệu: $e');
-      userProfile = null;
+      setState(() => isLoading = false);
     }
+  }
 
-    setState(() => isLoading = false);
+  Future<void> _logout() async {
+    await ApiService().logout(context);
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(85),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
+          child: AppBar(
+            toolbarHeight: 85,
+            backgroundColor: const Color.fromRGBO(42, 158, 207, 1),
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    size: 30,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Xin chào ${userProfile?['fullName'] ?? 'Tài xế'}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '📧 Email: ${userProfile?['email'] ?? 'Không có email'}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Đăng xuất',
+                onPressed: _logout,
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  color: Colors.grey.shade200,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Trạng thái hoạt động: ${isTripOpen ? 'Đang mở ✅' : 'Đã đóng 🛑'}',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      Switch(
+                        value: isTripOpen,
+                        onChanged: (value) => _toggleTripStatus(value),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _selectedIndex,
+                    children: _screens,
+                  ),
+                ),
+              ],
+            ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: const Color.fromARGB(179, 0, 0, 0),
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Chuyến đi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner),
+            label: 'Quét mã',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Cá nhân',
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _toggleTripStatus(bool newStatus) async {
@@ -65,13 +195,12 @@ class DriverHomeScreenState extends State<DriverHomeScreen> {
           ],
         ),
       );
-
       if (confirm != true) return;
     }
 
     setState(() => isLoading = true);
 
-    Map<String, dynamic>? response =
+    final response =
         newStatus ? await ApiService().openTrip() : await ApiService().closeTrip();
 
     bool success = response != null &&
@@ -79,7 +208,6 @@ class DriverHomeScreenState extends State<DriverHomeScreen> {
 
     setState(() {
       isLoading = false;
-
       if (success) {
         isTripOpen = newStatus;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,80 +219,9 @@ class DriverHomeScreenState extends State<DriverHomeScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('❌ Lỗi khi cập nhật trạng thái chuyến đi')),
+          const SnackBar(content: Text('❌ Lỗi khi cập nhật trạng thái chuyến đi')),
         );
       }
     });
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    await ApiService().logout(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Xin chào ${userProfile?['fullName'] ?? 'Tài xế'}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : token == null
-              ? const Center(child: Text('Vui lòng đăng nhập'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (userProfile != null) ...[
-                        Text(
-                          '📧 Email: ${userProfile!['email'] ?? 'Không có email'}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-
-                      const SizedBox(height: 16),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Trạng thái hoạt động: ${isTripOpen ? 'Đang mở ✅' : 'Đã đóng 🛑'}',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                          Switch(
-                            value: isTripOpen,
-                            onChanged: (value) => _toggleTripStatus(value),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      ElevatedButton(
-                        onPressed: () => context.go('/scan-qr'),
-                        child: const Text('📷 Quét mã QR để lên xe'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/driver-trip'),
-                        child: const Text('👥 Danh sách hành khách'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.go('/driver-profile'),
-                        child: const Text('👥 Trang cá nhân'),
-                      ),
-                    ],
-                  ),
-                ),
-    );
   }
 }

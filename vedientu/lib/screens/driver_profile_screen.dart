@@ -31,10 +31,7 @@ class _DriverProfilePageState extends State<DriverProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Thông tin tài khoản'),
-      leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/driver-home'), // Quay về trang chính
-        ),
+      centerTitle: true,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

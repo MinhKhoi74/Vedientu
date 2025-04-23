@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/api_service.dart';
 import 'package:go_router/go_router.dart';
+
 class ScanQRScreen extends StatefulWidget {
   const ScanQRScreen({Key? key}) : super(key: key);
 
@@ -13,65 +14,67 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   Barcode? result;
   final ApiService apiService = ApiService();
   bool isProcessing = false;
-  final MobileScannerController cameraController = MobileScannerController(); // Khởi tạo controller
+  final MobileScannerController cameraController = MobileScannerController();
 
   @override
   void dispose() {
-    cameraController.dispose(); // Giải phóng camera khi thoát
+    cameraController.dispose();
     super.dispose();
   }
 
-  // ✅ Hàm xử lý quét mã QR
   void _onDetect(BarcodeCapture barcodeCapture) async {
-  if (isProcessing) return; // Không xử lý nếu đang bận
-  setState(() => isProcessing = true);
+    if (isProcessing) return;
+    setState(() => isProcessing = true);
 
-  final Barcode? barcode = barcodeCapture.barcodes.isNotEmpty ? barcodeCapture.barcodes.first : null;
-  if (barcode != null && barcode.rawValue != null) {
-    setState(() => result = barcode);
-    
-    print("🔍 Mã QR quét được: ${barcode.rawValue}");
+    final Barcode? barcode = barcodeCapture.barcodes.isNotEmpty ? barcodeCapture.barcodes.first : null;
+    if (barcode != null && barcode.rawValue != null) {
+      setState(() => result = barcode);
 
-    // Kiểm tra định dạng mã QR
-    if (!barcode.rawValue!.startsWith("TicketID")) {
-      _showMessage("❌ Mã QR không đúng định dạng");
-      setState(() => isProcessing = false);
-      return;
-    }
-
-    // Tách mã QR và chỉ lấy phần "TicketID"
-    String ticketId = barcode.rawValue!.split(",").firstWhere((element) => element.startsWith("TicketID")).split(":").last.trim();
-
-    try {
-      print("📤 Gửi request đến API với mã TicketID: $ticketId");
-      final response = await apiService.scanDriverQR("TicketID:$ticketId");
-      print("📥 Phản hồi từ API: $response");
-
-      if (response != null) {
-        final isSuccess = response['success'] as bool? ?? false;
-        final message = response['message'] as String? ?? 'Không có thông báo từ server';
-
-        if (isSuccess) {
-          _showMessage('✅ $message');
-          context.go('/driver-home'); // Chuyển về trang chính của tài xế
-        } else {
-          _showMessage('❌ $message');
-        }
-      } else {
-        _showMessage('❌ Không nhận được phản hồi từ server!');
+      if (!barcode.rawValue!.startsWith("TicketID")) {
+        _showMessage("❌ Mã QR không đúng định dạng");
+        setState(() => isProcessing = false);
+        return;
       }
-    } catch (e) {
-      _showMessage('❌ Lỗi hệ thống: $e');
+
+      String ticketId = barcode.rawValue!
+          .split(",")
+          .firstWhere((e) => e.startsWith("TicketID"))
+          .split(":")
+          .last
+          .trim();
+
+      try {
+        final response = await apiService.scanDriverQR("TicketID:$ticketId");
+        if (response != null) {
+          final isSuccess = response['success'] as bool? ?? false;
+          final message = response['message'] as String? ?? 'Không có thông báo từ server';
+
+          if (isSuccess) {
+            _showMessage('✅ $message');
+
+            // Lấy tripId từ phản hồi (giả sử backend trả về nó như vậy)
+            final tripId = response['tripId'];
+            if (tripId != null) {
+              context.push('/passenger-list', extra: {'tripId': tripId});
+            } else {
+              _showMessage("❌ Không tìm thấy tripId trong phản hồi.");
+            }
+          } else {
+            _showMessage('❌ $message');
+          }
+        } else {
+          _showMessage('❌ Không nhận được phản hồi từ server!');
+        }
+      } catch (e) {
+        _showMessage('❌ Lỗi hệ thống: $e');
+      }
     }
+
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => isProcessing = false);
+    });
   }
 
-  Future.delayed(const Duration(seconds: 2), () {
-    setState(() => isProcessing = false); // Đặt lại trạng thái sau 2s
-  });
-}
-
-
-  // ✅ Hàm hiển thị thông báo
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -81,26 +84,87 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quét Mã QR Tài Xế'),
-      leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/driver-home'), // Quay về trang chính
-        )),
+      appBar: AppBar(
+        title: const Text('Quét mã QR', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(4, 53, 109, 1),
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
             flex: 5,
-            child: MobileScanner(
-              controller: cameraController, // Dùng controller để tránh lỗi camera
-              onDetect: _onDetect,
+            child: Stack(
+              children: [
+                MobileScanner(
+                  controller: cameraController,
+                  onDetect: _onDetect,
+                ),
+                Center(
+                  child: Container(
+                    width: 250,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.black.withOpacity(0.2),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.qr_code_scanner, color: Colors.white70, size: 50),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
-            flex: 1,
-            child: Center(
-              child: (result != null)
-                  ? Text('Mã QR: ${result!.rawValue}')
-                  : const Text('Quét mã QR để kiểm tra'),
+            flex: 2,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: const BoxDecoration(
+                color: Color.fromRGBO(245, 247, 250, 1),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Hướng camera vào mã QR trên vé của hành khách để kiểm tra',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.qr_code, color: Colors.blue),
+                        const SizedBox(width: 10),
+                        Text(
+                          result != null ? result!.rawValue ?? '...' : 'Chưa có mã được quét',
+                          style: const TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
