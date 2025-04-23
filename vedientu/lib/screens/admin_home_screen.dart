@@ -79,7 +79,7 @@ Widget build(BuildContext context) {
           backgroundColor: const Color.fromRGBO(42, 158, 207, 1),
           title: Row(
             children: [
-              // Avatar sử dụng icon có sẵn
+              // Avatar sử dụng icon có sẵnn
               CircleAvatar(
                 radius: 30,
                 backgroundColor: Colors.white,
