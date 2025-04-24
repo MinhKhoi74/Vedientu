@@ -7,7 +7,11 @@ class TransactionDetailsScreen extends StatefulWidget {
   final int transactionId;
   final Map<String, dynamic>? transactionData;
 
-  const TransactionDetailsScreen({super.key, required this.transactionId, this.transactionData});
+  const TransactionDetailsScreen({
+    super.key,
+    required this.transactionId,
+    this.transactionData,
+  });
 
   @override
   State<TransactionDetailsScreen> createState() => _TransactionDetailsScreenState();
@@ -68,6 +72,22 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     }
   }
 
+  Widget _buildLabelText(String label, String value, {Color? valueColor, bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -83,21 +103,60 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       );
     }
 
+    final ticketType = transactionData?['ticketType'] ?? 'UNKNOWN';
+    final status = transactionData?['status'] ?? 'UNKNOWN';
+    final amount = transactionData?['amount']?.toDouble() ?? 0.0;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Chi tiết giao dịch')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('🧾 Mã giao dịch: ${widget.transactionId}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('👤 Người dùng: ${transactionData?['userFullName'] ?? 'Không rõ'}'),
-            Text('💳 Loại vé: ${transactionData?['ticketType'] ?? 'Không rõ'}'),
-            Text('💰 Số tiền: ${_formatPrice(transactionData?['amount']?.toDouble() ?? 0.0)}'),
-            Text('📅 Ngày giao dịch: ${_formatDate(transactionData?['transactionDate'] ?? '')}'),
-            Text('📄 Phương thức thanh toán: ${transactionData?['paymentMethod'] ?? 'Không rõ'}'),
-            Text('📌 Trạng thái: ${transactionData?['status'] ?? 'Không rõ'}'),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 6,
+                color: Colors.grey.shade200,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row đầu tiên: Mã giao dịch + Trạng thái
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Mã giao dịch: ${widget.transactionId}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    status.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(transactionData?['userFullName'] ?? 'Không rõ'),
+
+              const SizedBox(height: 12),
+              _buildLabelText('Ngày giao dịch', _formatDate(transactionData?['transactionDate'] ?? '')),
+              const SizedBox(height: 4),
+              _buildLabelText('Loại vé', ticketType.toUpperCase(), valueColor: Colors.red, bold: true),
+              const SizedBox(height: 4),
+              _buildLabelText('Phương thức thanh toán', transactionData?['paymentMethod'] ?? ''),
+              const SizedBox(height: 4),
+              _buildLabelText('Số tiền', _formatPrice(amount), bold: true),
+            ],
+          ),
         ),
       ),
     );

@@ -21,7 +21,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     MyTicketsScreen(), // Màn hình danh sách vé đã mua
-    MyTicketsScreen(), // Màn hình danh sách vé
+   // Màn hình danh sách vé
     MyRidesScreen(), // Lịch sử chuyến đi
     MyTransactionsScreen(), // Lịch sử giao dịch
     UserProfilePage(), // Thông tin tài khoản
@@ -29,7 +29,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   final List<String> _titles = [
     "Trang chủ",
-    "Danh sách vé",
+
     "Lịch sử chuyến đi",
     "Lịch sử giao dịch",
     "Thông tin tài khoản",
@@ -152,10 +152,7 @@ class HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.home),
             label: 'Trang chủ',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Danh sách vé',
-          ),
+         
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'Lịch sử chuyến đi',
