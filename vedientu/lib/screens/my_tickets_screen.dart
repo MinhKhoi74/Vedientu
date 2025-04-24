@@ -64,10 +64,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('🎟️ Danh sách vé của bạn'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'), // Quay về trang chính
-        ),
+        
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

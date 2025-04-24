@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:intl/intl.dart';
 class BuyTicketScreen extends StatefulWidget {
   const BuyTicketScreen({super.key});
 
@@ -25,7 +25,7 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
         SnackBar(content: Text('🎉 Mua vé thành công! Loại vé: $_selectedTicketType')),
       );
       if (mounted) {
-        context.go('/tickets'); // Chuyển sang trang danh sách vé
+        context.go('/home');
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -40,42 +40,79 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ticketOptions = ['SINGLE', 'VIP', 'MONTHLY'];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Mua vé mới'),
-      leading: IconButton(
+      appBar: AppBar(
+        title: const Text('Mua vé mới'),
+        leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/tickets'), // ✅ Nút quay lại trang trước
+          onPressed: () => context.go('/home'), //
         ),
-  ),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Chọn loại vé:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            DropdownButton<String>(
-              value: _selectedTicketType,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedTicketType = newValue!;
-                });
-              },
-              items: ['SINGLE', 'VIP', 'MONTHLY'].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _buyTicket, // Gọi hàm mua vé
-                    child: const Text('Xác nhận mua vé'),
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Card(
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '🧾 Chọn loại vé',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-          ],
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _selectedTicketType,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    items: ticketOptions.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value == 'SINGLE'
+                              ? 'Vé đơn'
+                              : value == 'VIP'
+                                  ? 'Vé VIP'
+                                  : 'Vé tháng',
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedTicketType = newValue!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton.icon(
+                            onPressed: _buyTicket,
+                            icon: const Icon(Icons.check_circle),
+                            label: const Text('Xác nhận mua vé'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              textStyle: const TextStyle(fontSize: 16),
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

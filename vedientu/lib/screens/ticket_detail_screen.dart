@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // 🆕 Dùng để định dạng tiền và ngày giờ
+import 'package:intl/intl.dart';
 
 class TicketDetailsScreen extends StatefulWidget {
   final int ticketId;
@@ -77,9 +77,9 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
       final expiry = DateTime.parse(expiryDate);
       final now = DateTime.now();
       final difference = expiry.difference(now).inDays;
-      return difference > 0 ? difference : 0;  // Nếu hết hạn rồi thì trả về 0
+      return difference > 0 ? difference : 0;
     } catch (_) {
-      return 0;  // Nếu có lỗi, trả về 0
+      return 0;
     }
   }
 
@@ -112,27 +112,47 @@ class _TicketDetailsScreenState extends State<TicketDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Chi tiết vé 🎟️')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('🆔 Mã vé: ${widget.ticketId}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('🎫 Loại vé: $ticketType'),
-            Text(
-              ticketType == 'MONTHLY'
-                  ? '📅 Hạn sử dụng còn lại: ${_calculateDaysLeft(expiryDate)} ngày'
-                  : '⏳ Số lượt còn lại: $remainingRides',
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('🆔 Mã vé: ${widget.ticketId}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('🎫 Loại vé: $ticketType', style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
+                Text(
+                  ticketType == 'MONTHLY'
+                      ? '📅 Hạn sử dụng còn lại: ${_calculateDaysLeft(expiryDate)} ngày'
+                      : '⏳ Số lượt còn lại: $remainingRides',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text('💳 Giá: ${_formatPrice(price)}', style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
+                Text('🛒 Ngày mua: ${_formatDate(purchaseDate)}', style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
+                Text('📆 Hạn sử dụng: ${_formatDate(expiryDate)}', style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 24),
+                Center(
+                  child: qrCodeBytes != null
+                      ? Column(
+                          children: [
+                            const Text('🎟️ Mã QR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 12),
+                            Image.memory(qrCodeBytes, width: 200, height: 200),
+                          ],
+                        )
+                      : const Text('⚠️ Không có mã QR'),
+                ),
+              ],
             ),
-            Text('💰 Giá: ${_formatPrice(price)}'),
-            Text('📅 Ngày mua: ${_formatDate(purchaseDate)}'),
-            Text('📆 Hạn sử dụng: ${_formatDate(expiryDate)}'),
-            const SizedBox(height: 20),
-            if (qrCodeBytes != null)
-              Center(child: Image.memory(qrCodeBytes, width: 200, height: 200))
-            else
-              const Center(child: Text('⚠️ Không có mã QR')),
-          ],
+          ),
         ),
       ),
     );

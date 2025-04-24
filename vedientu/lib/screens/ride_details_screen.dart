@@ -6,7 +6,11 @@ class RideDetailsScreen extends StatefulWidget {
   final int rideId;
   final Map<String, dynamic>? rideData;
 
-  const RideDetailsScreen({super.key, required this.rideId, this.rideData});
+  const RideDetailsScreen({
+    super.key,
+    required this.rideId,
+    this.rideData,
+  });
 
   @override
   State<RideDetailsScreen> createState() => _RideDetailsScreenState();
@@ -36,7 +40,6 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       if (data != null) {
         setState(() {
           rideData = data;
-          print('Ride data: $rideData');
           isLoading = false;
         });
       } else {
@@ -45,7 +48,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
         hasError = true;
         isLoading = false;
@@ -60,6 +63,25 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     } catch (_) {
       return 'Không hợp lệ';
     }
+  }
+
+  Widget _buildLabelText(String label, String value, {Color? valueColor, bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: valueColor ?? Colors.black,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -77,24 +99,65 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       );
     }
 
+    final status = rideData?['status'] ?? 'UNKNOWN';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Chi tiết chuyến đi')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('🚌 Mã chuyến đi: ${rideData?['id'] ?? 'Không rõ'}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('👨‍✈️ Tên khách hàng: ${rideData?['userName'] ?? 'Không rõ'}'),
-            Text('🚍 Biển số xe buýt: ${rideData?['busCode'] ?? 'Không rõ'}'),
-            Text('🚍 Mã xe buýt: ${rideData?['busId'] ?? 'Không rõ'}'),
-            Text('🛣️ Tuyến: ${rideData?['route'] ?? 'Không rõ'}'),
-            Text('👨‍✈️ Tài xế: ${rideData?['driverName'] ?? 'Không rõ'}'),
-            Text('🕒 Thời gian đi: ${_formatDate(rideData?['rideTime'] ?? '')}'),
-            Text('🎟️ Mã vé: ${rideData?['ticketId'] ?? 'Không rõ'}'),
-            Text('📌 Trạng thái: ${rideData?['status'] ?? 'Không rõ'}'),
-          ],
+        padding: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 6,
+                color: Colors.grey.shade200,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: Ride ID and Status
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Mã chuyến đi: ${rideData?['id'] ?? 'Không rõ'}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    status.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                rideData?['userName'] ?? 'Không rõ',
+                style: const TextStyle(color: Colors.black87),
+              ),
+
+              const SizedBox(height: 12),
+              _buildLabelText('Biển số xe buýt', rideData?['busCode'] ?? 'Không rõ'),
+              const SizedBox(height: 4),
+              _buildLabelText('Mã xe buýt', rideData?['busId']?.toString() ?? 'Không rõ'),
+              const SizedBox(height: 4),
+              _buildLabelText('Tuyến', rideData?['route'] ?? 'Không rõ'),
+              const SizedBox(height: 4),
+              _buildLabelText('Tài xế', rideData?['driverName'] ?? 'Không rõ'),
+              const SizedBox(height: 4),
+              _buildLabelText('Thời gian đi', _formatDate(rideData?['rideTime'] ?? '')),
+              const SizedBox(height: 4),
+              _buildLabelText('Mã vé', rideData?['ticketId']?.toString() ?? 'Không rõ'),
+            ],
+          ),
         ),
       ),
     );
