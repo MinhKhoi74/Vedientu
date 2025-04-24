@@ -680,6 +680,7 @@ Future<List<dynamic>> getAllTransactionsForAdmin() async {
     );
 
     if (response.statusCode == 200) {
+      debugPrint("Lấy báo cáo thành công: ${response.data}");
       return response.data as Map<String, dynamic>;
     } else {
       print("Lỗi: ${response.statusCode}");
