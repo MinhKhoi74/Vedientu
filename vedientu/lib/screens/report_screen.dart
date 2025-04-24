@@ -152,11 +152,12 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildCategoryBox(
-      {required IconData icon,
-      required String title,
-      required int count,
-      required Color color}) {
+  Widget _buildCategoryBox({
+    required IconData icon,
+    required String title,
+    required int count,
+    required Color color,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
@@ -183,182 +184,192 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildBarChart() {
-  final totalUsers = reportData?['totalUsers'] ?? 0;
-  final totalSingleTickets = reportData?['totalSingleTickets'] ?? 0;
-  final totalMonthlyTickets = reportData?['totalMonthlyTickets'] ?? 0;
-  final totalVipTickets = reportData?['totalVipTickets'] ?? 0;
+    final totalUsers = reportData?['totalUsers'] ?? 0;
+    final totalSingleTickets = reportData?['totalSingleTickets'] ?? 0;
+    final totalMonthlyTickets = reportData?['totalMonthlyTickets'] ?? 0;
+    final totalVipTickets = reportData?['totalVipTickets'] ?? 0;
 
-  return Card(
-    elevation: 3,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          const Text('📊 Biểu đồ thống kê',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 250,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: totalSingleTickets > 0 ? totalSingleTickets : 500,
-                barGroups: [
-                  BarChartGroupData(x: 0, barRods: [
-                    BarChartRodData(
-                        toY: totalUsers.toDouble(),
-                        width: 22,
-                        color: Colors.blue)
-                  ]),
-                 
-                  BarChartGroupData(x: 1, barRods: [
-                    BarChartRodData(
-                        toY: totalSingleTickets.toDouble(),
-                        width: 22,
-                        color: Colors.deepOrange)
-                  ]),
-                  BarChartGroupData(x: 2, barRods: [
-                    BarChartRodData(
-                        toY: totalMonthlyTickets.toDouble(),
-                        width: 22,
-                        color: Colors.green)
-                  ]),
-                BarChartGroupData(x: 3, barRods: [
-                    BarChartRodData(
-                        toY: totalVipTickets.toDouble(),
-                        width: 22,
-                        color: Colors.redAccent)
-                  ]),  
-                ],
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, _) {
-                        switch (value.toInt()) {
-                          case 0:
-                            return const Text("Người dùng");
-                          case 1:
-                            return const Text("Vé Thường");
-                          case 2:
-                            return const Text("Vé Tháng");
-                          case 3:
-                            return const Text("Vé VIP");
-                        }
-                        return const Text('');
-                      },
+    return Container(
+      width: double.infinity,
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              const Text(
+                '📊 Biểu đồ thống kê',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 250,
+                width: double.infinity,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: ([
+                          totalUsers,
+                          totalSingleTickets,
+                          totalMonthlyTickets,
+                          totalVipTickets
+                        ].reduce((a, b) => a > b ? a : b) *
+                            1.2)
+                        .toDouble(),
+                    barGroups: [
+                      BarChartGroupData(x: 0, barRods: [
+                        BarChartRodData(
+                            toY: totalUsers.toDouble(),
+                            width: 22,
+                            color: Colors.blue)
+                      ]),
+                      BarChartGroupData(x: 1, barRods: [
+                        BarChartRodData(
+                            toY: totalSingleTickets.toDouble(),
+                            width: 22,
+                            color: Colors.deepOrange)
+                      ]),
+                      BarChartGroupData(x: 2, barRods: [
+                        BarChartRodData(
+                            toY: totalMonthlyTickets.toDouble(),
+                            width: 22,
+                            color: Colors.green)
+                      ]),
+                      BarChartGroupData(x: 3, barRods: [
+                        BarChartRodData(
+                            toY: totalVipTickets.toDouble(),
+                            width: 22,
+                            color: Colors.redAccent)
+                      ]),
+                    ],
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, _) {
+                            switch (value.toInt()) {
+                              case 0:
+                                return const Text("Người dùng");
+                              case 1:
+                                return const Text("Vé Thường");
+                              case 2:
+                                return const Text("Vé Tháng");
+                              case 3:
+                                return const Text("Vé VIP");
+                              default:
+                                return const Text('');
+                            }
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      topTitles:
+                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles:
+                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     ),
                   ),
-                  leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  topTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:
-                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hasError
               ? const Center(child: Text('❌ Không thể tải báo cáo'))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Doanh thu
-                      Card(
-                        color: Colors.teal.shade50,
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.monetization_on,
-                                  color: Colors.teal, size: 40),
-                              const SizedBox(width: 16),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text("Tổng doanh thu: ",
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  Text(formatCurrency(reportData?["totalRevenue"]),
-                                      style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal)),
-                                ],
-                              )
-                            ],
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Tổng doanh thu
+                        Card(
+                          color: Colors.teal.shade50,
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.monetization_on,
+                                    color: Colors.teal, size: 40),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Tổng doanh thu:",
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        formatCurrency(
+                                            reportData?["totalRevenue"]),
+                                        style: const TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.teal),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      _buildImageSlider(),
-                      const SizedBox(height: 20),
-
-                      // Biểu đồ
-                      _buildBarChart(),
-
-                      // Quản lý người dùng
-                      _buildSectionTitle("Quản lý người dùng", Icons.people),
-                      _buildCategoryBox(
-                        icon: Icons.people,
-                        title: "Tổng người dùng",
-                        count: reportData?["totalUsers"] ?? 0,
-                        color: Colors.blue,
-                      ),
-                      _buildCategoryBox(
-                        icon: Icons.directions_bus,
-                        title: "Tổng lượt đi",
-                        count: reportData?["totalRides"] ?? 0,
-                        color: Colors.orange,
-                      ),
-
-                      // Quản lý vé
-                      _buildSectionTitle("Quản lý vé", Icons.confirmation_num),
-                      _buildCategoryBox(
-                        icon: Icons.confirmation_num_outlined,
-                        title: "Vé Thường",
-                        count: reportData?["totalSingleTickets"] ?? 0,
-                        color: Colors.deepOrange,
-                      ),
-                      _buildCategoryBox(
-                        icon: Icons.calendar_month,
-                        title: "Vé Tháng",
-                        count: reportData?["totalMonthlyTickets"] ?? 0,
-                        color: Colors.green,
-                      ),
-                      _buildCategoryBox(
-                        icon: Icons.star,
-                        title: "Vé VIP",
-                        count: reportData?["totalVipTickets"] ?? 0,
-                        color: Colors.redAccent,
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        _buildImageSlider(),
+                        const SizedBox(height: 20),
+                        _buildBarChart(),
+                        _buildSectionTitle("Quản lý người dùng", Icons.people),
+                        _buildCategoryBox(
+                          icon: Icons.people,
+                          title: "Tổng người dùng",
+                          count: reportData?["totalUsers"] ?? 0,
+                          color: Colors.blue,
+                        ),
+                        _buildCategoryBox(
+                          icon: Icons.directions_bus,
+                          title: "Tổng lượt đi",
+                          count: reportData?["totalRides"] ?? 0,
+                          color: Colors.orange,
+                        ),
+                        _buildSectionTitle("Quản lý vé", Icons.confirmation_num),
+                        _buildCategoryBox(
+                          icon: Icons.confirmation_num_outlined,
+                          title: "Vé Thường",
+                          count: reportData?["totalSingleTickets"] ?? 0,
+                          color: Colors.deepOrange,
+                        ),
+                        _buildCategoryBox(
+                          icon: Icons.calendar_month,
+                          title: "Vé Tháng",
+                          count: reportData?["totalMonthlyTickets"] ?? 0,
+                          color: Colors.green,
+                        ),
+                        _buildCategoryBox(
+                          icon: Icons.star,
+                          title: "Vé VIP",
+                          count: reportData?["totalVipTickets"] ?? 0,
+                          color: Colors.redAccent,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
     );

@@ -1,70 +1,205 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../services/api_service.dart'; // import AuthService
+import 'login_screen.dart'; // import LoginScreen
 import 'package:go_router/go_router.dart';
-import '../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
-
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController(); // Thêm phone
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
-  bool isLoading = false;
-  final ApiService apiService = ApiService();
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isChecked = false;
 
-  Future<void> register() async {
-    setState(() => isLoading = true);
-    
-    bool success = await apiService.register(
-      nameController.text,
-      emailController.text,
-      passwordController.text,
-      phoneController.text, // Truyền phone vào API
-    );
+  void _register() async {
+  String name = _nameController.text.trim();
+  String email = _emailController.text.trim();
+  String password = _passwordController.text;
+  String confirmPassword = _confirmPasswordController.text;
+  String phone = _phoneController.text.trim();
 
-    if (success) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("🎉 Đăng ký thành công!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      await Future.delayed(const Duration(seconds: 2)); // Đợi 2 giây trước khi chuyển trang
-      context.go('/'); 
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đăng ký thất bại!')),
-      );
+  if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty || phone.isEmpty) {
+    _showDialog("Lỗi", "Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
+
+  if (!RegExp(r"^[\w-\.]+@gmail\.com$").hasMatch(email)) {
+    _showDialog("Lỗi", "Vui lòng nhập địa chỉ Gmail hợp lệ.");
+    return;
+  }
+
+  if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$').hasMatch(password)) {
+    _showDialog("Lỗi", "Mật khẩu phải đủ mạnh.");
+    return;
+  }
+
+  if (password != confirmPassword) {
+    _showDialog("Lỗi", "Mật khẩu không khớp!");
+    return;
+  }
+
+  if (!RegExp(r'^[0-9]+$').hasMatch(phone)) {
+    _showDialog("Lỗi", "Số điện thoại chỉ được chứa số.");
+    return;
+  }
+
+  if (!_isChecked) {
+    _showDialog("Lỗi", "Bạn phải xác nhận không phải robot!");
+    return;
+  }
+
+  // Kiểm tra email và số điện thoại đã đăng ký chưa
+  try {
+    bool isEmailRegistered = await ApiService().checkEmailExists(email);
+    bool isPhoneRegistered = await ApiService().checkPhoneExists(phone);
+
+    if (isEmailRegistered) {
+      _showDialog("Lỗi", "Email này đã được đăng ký!");
+      return;
     }
-    setState(() => isLoading = false);
+
+    if (isPhoneRegistered) {
+      _showDialog("Lỗi", "Số điện thoại này đã được đăng ký!");
+      return;
+    }
+
+    // Nếu không trùng lặp, thực hiện đăng ký
+    bool isSuccess = await ApiService().registerWithRole(name, email, password, phone, 'DRIVER'); // hoặc 'DRIVER'
+
+    if (isSuccess) {
+  _showDialog("Thành công", "Đăng ký thành công!", onOk: () {
+    GoRouter.of(context).go('/');
+  });
+}
+else {
+      _showDialog("Lỗi", "Đăng ký thất bại. Vui lòng thử lại.");
+    }
+  } catch (e) {
+    _showDialog("Lỗi", "Không thể kết nối đến server.");
+  }
+}
+
+
+  void _showDialog(String title, String message, {VoidCallback? onOk}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (onOk != null) onOk();
+            },
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, bool obscure,
+      {bool isPassword = false, bool isConfirmPassword = false}) {
+    bool show = isPassword ? _isPasswordVisible : (isConfirmPassword ? _isConfirmPasswordVisible : false);
+    return TextField(
+      controller: controller,
+      obscureText: isPassword || isConfirmPassword ? !show : false,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        suffixIcon: (isPassword || isConfirmPassword)
+            ? IconButton(
+                icon: Icon(show ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    if (isPassword) _isPasswordVisible = !_isPasswordVisible;
+                    if (isConfirmPassword) _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                  });
+                },
+              )
+            : null,
+        border: OutlineInputBorder(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Đăng ký")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Tên')),
-            TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-            TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Mật khẩu'), obscureText: true),
-            TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Số điện thoại')), // Thêm trường phone
-            const SizedBox(height: 16),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(onPressed: register, child: const Text('Đăng ký')),
-            TextButton(onPressed: () => context.go('/'), child: const Text('Đã có tài khoản? Đăng nhập'))
-          ],
+      backgroundColor: Colors.blue[50],
+      appBar: AppBar(
+        title: Text("Đăng ký"),
+        leading: IconButton(
+  icon: Icon(Icons.arrow_back),
+  onPressed: () => GoRouter.of(context).go('/'), // Điều hướng tới LoginScreen
+),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Icon(Icons.app_registration, size: 80, color: Colors.blue[600])),
+              SizedBox(height: 10),
+              Center(
+                child: Text(
+                  "Tạo tài khoản mới",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue[800]),
+                ),
+              ),
+              SizedBox(height: 15),
+              _buildTextField("Họ và tên (*)", Icons.person, _nameController, false),
+              SizedBox(height: 10),
+              _buildTextField("Email bạn sử dụng (*)", Icons.email, _emailController, false),
+              SizedBox(height: 10),
+              _buildTextField("Mật khẩu (*)", Icons.lock, _passwordController, true, isPassword: true),
+              SizedBox(height: 10),
+              _buildTextField("Nhập lại mật khẩu (*)", Icons.lock, _confirmPasswordController, true, isConfirmPassword: true),
+              SizedBox(height: 10),
+              _buildTextField("Số điện thoại (*)", Icons.phone, _phoneController, false),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isChecked,
+                    onChanged: (value) => setState(() => _isChecked = value!),
+                    activeColor: Colors.blue,
+                  ),
+                  Text("Tôi không phải người máy", style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text("Đăng ký", style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.05),
+            ],
+          ),
         ),
       ),
     );

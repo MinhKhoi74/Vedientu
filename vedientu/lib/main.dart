@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/buy_ticket_screen.dart';
@@ -27,7 +26,8 @@ import 'screens/my_rides_screen.dart';
 import 'screens/ride_details_screen.dart';
 import 'screens/driver_trip_list_screen.dart';
 import 'screens/driver_profile_screen.dart';
-
+import 'screens/forgot_password_page.dart';
+import 'screens/otp_verification_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -70,6 +70,7 @@ class MyApp extends StatelessWidget {
         final initialRoute = snapshot.data!;
 
         return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
           title: 'Vé Điện Tử',
           theme: ThemeData(primarySwatch: Colors.blue),
           routerConfig: GoRouter(
@@ -77,8 +78,10 @@ class MyApp extends StatelessWidget {
             routes: [
 
               /// User
-              GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
-              GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
+              GoRoute(path: '/', builder: (context, state) => LoginScreen()),
+              GoRoute(path: '/register', builder: (context, state) => RegisterScreen()),
+              GoRoute(path: '/forgot-password', builder: (context, state) =>  ForgotPasswordPage()),
+              GoRoute(path: '/otp-verification', builder: (context, state) =>  OTPVerificationPage(email: state.extra as String,)),
               GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
               GoRoute(path: '/buy-ticket', builder: (context, state) => const BuyTicketScreen()),
               GoRoute(path: '/profile', builder: (context, state) => const UserProfilePage()),

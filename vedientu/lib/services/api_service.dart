@@ -5,28 +5,58 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petitparser/debug.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 class ApiService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://7c12-171-252-153-31.ngrok-free.app/'));
+  final String baseUrl = 'https://7c12-171-252-153-31.ngrok-free.app';
 
   // Đăng ký tài khoản
-  Future<bool> register(String name, String email, String password, String phone) async {
-    try {
-      final response = await _dio.post('auth/register', data: {
-        'fullName': name, 
-        'email': email,
-        'password': password,
-        'phone': phone,     
-        'role': 'CUSTOMER'  
-      });
+   Future<bool> register(String name, String email, String password, String phone) async {
+  try {
+    // Kiểm tra xem email và số điện thoại đã tồn tại chưa
+    bool emailExists = await checkEmailExists(email);
+    bool phoneExists = await checkPhoneExists(phone);
 
-      return response.statusCode == 201;
-    } catch (e) {
-      return false;
+    if (emailExists) {
+      return Future.error("Email này đã được đăng ký!");
     }
+
+    if (phoneExists) {
+      return Future.error("Số điện thoại này đã được đăng ký!");
+    }
+
+    // Nếu không trùng lặp, thực hiện đăng ký
+    final response = await _dio.post('auth/register', data: {
+      'fullName': name,
+      'email': email,
+      'password': password,
+      'phone': phone,
+      'role': 'CUSTOMER',
+    });
+
+    return response.statusCode == 201;
+  } catch (e) {
+    return Future.error("Không thể kết nối đến server.");
   }
-// Đăng ký tài khoản với role tùy chọn (dành cho admin)
+}
+
+// Đăng ký tài khoản với role tùy chọn
 Future<bool> registerWithRole(String name, String email, String password, String phone, String role) async {
   try {
+    // Kiểm tra xem email và số điện thoại đã tồn tại chưa
+    bool emailExists = await checkEmailExists(email);
+    bool phoneExists = await checkPhoneExists(phone);
+
+    if (emailExists) {
+      return Future.error("Email này đã được đăng ký!");
+    }
+
+    if (phoneExists) {
+      return Future.error("Số điện thoại này đã được đăng ký!");
+    }
+
+    // Nếu không trùng lặp, thực hiện đăng ký
     final response = await _dio.post('auth/register', data: {
       'fullName': name,
       'email': email,
@@ -37,9 +67,40 @@ Future<bool> registerWithRole(String name, String email, String password, String
 
     return response.statusCode == 201;
   } catch (e) {
+    return Future.error("Không thể kết nối đến server.");
+  }
+}
+
+// Kiểm tra email đã tồn tại trong hệ thống
+Future<bool> checkEmailExists(String email) async {
+  try {
+    final response = await _dio.get('auth/check-email', queryParameters: {'email': email});
+
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data['exists']; // Giả sử API trả về một trường "exists" kiểu bool
+    }
+    return false;
+  } catch (e) {
     return false;
   }
 }
+
+// Kiểm tra số điện thoại đã tồn tại trong hệ thống
+Future<bool> checkPhoneExists(String phone) async {
+  try {
+    final response = await _dio.get('auth/check-phone', queryParameters: {'phone': phone});
+
+    if (response.statusCode == 200) {
+      var data = response.data;
+      return data['exists']; // Giả sử API trả về một trường "exists" kiểu bool
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
 
   // Đăng nhập
   Future<bool> login(String email, String password) async {
@@ -80,6 +141,57 @@ Future<bool> registerWithRole(String name, String email, String password, String
   }
 }
 
+Future<bool> sendOTP(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/send-otp"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final body = json.decode(utf8.decode(response.bodyBytes));
+        throw Exception(body["message"] ?? "Không thể gửi OTP. Vui lòng thử lại.");
+      }
+    } catch (e) {
+      throw Exception("Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng kiểm tra kết nối.");
+    }
+  }
+
+
+Future<Map<String, dynamic>> resetPassword(String email, String otp, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/reset-password"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+          "otp": otp,
+          "newPassword": newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          "success": true,
+          "message": "Đổi mật khẩu thành công. Hãy đăng nhập lại.",
+        };
+      } else {
+        final body = json.decode(utf8.decode(response.bodyBytes));
+        return {
+          "success": false,
+          "message": body["message"] ?? "OTP không hợp lệ hoặc đã hết hạn.",
+        };
+      }
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Lỗi kết nối, vui lòng thử lại sau.",
+      };
+    }
+  }
 
 
 
@@ -691,5 +803,37 @@ Future<List<dynamic>> getAllTransactionsForAdmin() async {
     return null;
   }
 }
+//uodate profile
+Future<bool> updateUserProfile(Map<String, String> updates) async {
+  try {
+    final token = await getToken();  // Lấy token từ SharedPreferences
+
+    if (token == null) {
+      print('Token không tồn tại');
+      return false;  // Nếu không có token, trả về false
+    }
+
+    final response = await _dio.put(
+      '$baseUrl/user/update', // Endpoint cập nhật
+      data: updates,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token', // Sử dụng token lấy được
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print('Error updating profile: $e');
+    return false;
+  }
+}
+
 
 }

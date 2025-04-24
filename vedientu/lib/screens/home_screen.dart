@@ -93,40 +93,45 @@ class HomeScreenState extends State<HomeScreen> {
             toolbarHeight: 85,
             backgroundColor: const Color.fromRGBO(42, 158, 207, 1),
             title: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 30,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Xin chào ${userProfile?['fullName'] ?? 'Người dùng'}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '📧 Email: ${userProfile?['email'] ?? 'Không có email'}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+  children: [
+    CircleAvatar(
+      radius: 30,
+      backgroundColor: Colors.white,
+      child: Icon(
+        Icons.person,
+        size: 30,
+        color: Colors.grey[700],
+      ),
+    ),
+    const SizedBox(width: 12),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Xin chào ${userProfile?['fullName'] ?? 'Người dùng'}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '📧 Email: ${userProfile?['email'] ?? 'Không có email'}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),
