@@ -8,8 +8,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://7c12-171-252-153-31.ngrok-free.app/'));
-  final String baseUrl = 'https://7c12-171-252-153-31.ngrok-free.app';
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080/'));
+  final String baseUrl = 'http://localhost:8080';
 
   // Đăng ký tài khoản
    Future<bool> register(String name, String email, String password, String phone) async {

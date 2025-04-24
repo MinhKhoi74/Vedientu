@@ -63,99 +63,103 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thông tin tài khoản'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'), // Quay về trang chính
-        ),
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Thông tin tài khoản'),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.go('/home'), // Quay về trang chính
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : userProfile == null
-              ? const Center(child: Text('Không thể tải thông tin người dùng.'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _fullNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Họ và tên',
-                              ),
-                              enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Họ và tên không được để trống';
-                                }
-                                return null;
-                              },
+    ),
+    body: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : userProfile == null
+            ? const Center(child: Text('Không thể tải thông tin người dùng.'))
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _fullNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Họ và tên',
                             ),
-                            const SizedBox(height: 10),
-                            TextFormField(
-                              controller: _phoneController,
-                              decoration: const InputDecoration(
-                                labelText: 'Số điện thoại',
-                              ),
-                              enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Số điện thoại không được để trống';
-                                }
-                                return null;
-                              },
+                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Họ và tên không được để trống';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: _phoneController,
+                            decoration: const InputDecoration(
+                              labelText: 'Số điện thoại',
                             ),
-                            const SizedBox(height: 10),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                              ),
-                              enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Email không được để trống';
-                                } else if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                                  return 'Vui lòng nhập email hợp lệ';
-                                }
-                                return null;
-                              },
+                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Số điện thoại không được để trống';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
                             ),
-                            const SizedBox(height: 20),
-                            isEditing // Hiển thị nút Cập nhật chỉ khi đang ở chế độ chỉnh sửa
-                                ? ElevatedButton(
-                                    onPressed: _updateProfile,
-                                    child: const Text('Cập nhật'),
-                                  )
-                                : ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isEditing = true; // Bật chế độ chỉnh sửa
-                                      });
-                                    },
-                                    child: const Text('Chỉnh sửa thông tin'),
-                                  ),
-                          ],
-                        ),
+                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Email không được để trống';
+                              } else if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                                return 'Vui lòng nhập email hợp lệ';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          isEditing // Hiển thị nút Cập nhật chỉ khi đang ở chế độ chỉnh sửa
+                              ? ElevatedButton(
+                                  onPressed: _updateProfile,
+                                  child: const Text('Cập nhật'),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isEditing = true; // Bật chế độ chỉnh sửa
+                                    });
+                                  },
+                                  child: const Text('Chỉnh sửa thông tin'),
+                                ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
+                    ),
+                    const SizedBox(height: 20),
+                    // Căn giữa nút Đăng xuất
+                    Center(
+                      child: ElevatedButton(
                         onPressed: () async {
                           await _apiService.logout(context);
                         },
                         child: const Text('Đăng xuất'),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-    );
-  }
+              ),
+  );
+}
+
 }
