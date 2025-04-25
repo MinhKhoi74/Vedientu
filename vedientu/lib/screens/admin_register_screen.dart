@@ -41,7 +41,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
 
     if (success) {
       await Future.delayed(const Duration(seconds: 1));
-      context.go('/users');
+      context.go('/admin-home');
     }
 
     setState(() => isLoading = false);
