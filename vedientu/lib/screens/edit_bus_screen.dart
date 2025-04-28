@@ -156,6 +156,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
                         icon: const Icon(Icons.save),
                         label: const Text('Lưu thay đổi'),
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           textStyle: const TextStyle(fontSize: 16),
                           shape: RoundedRectangleBorder(

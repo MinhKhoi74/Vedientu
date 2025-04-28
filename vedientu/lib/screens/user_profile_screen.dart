@@ -68,10 +68,7 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: const Text('Thông tin tài khoản'),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => context.go('/home'), // Quay về trang chính
-      ),
+      
     ),
     body: isLoading
         ? const Center(child: CircularProgressIndicator())
@@ -130,32 +127,76 @@ Widget build(BuildContext context) {
                             },
                           ),
                           const SizedBox(height: 20),
-                          isEditing // Hiển thị nút Cập nhật chỉ khi đang ở chế độ chỉnh sửa
-                              ? ElevatedButton(
+                          isEditing
+                              ? ElevatedButton.icon(
                                   onPressed: _updateProfile,
-                                  child: const Text('Cập nhật'),
+                                  icon: const Icon(Icons.check_circle_outline),
+                                  label: const Text(
+                                    'Cập nhật',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
                                 )
-                              : ElevatedButton(
+                              : ElevatedButton.icon(
                                   onPressed: () {
                                     setState(() {
-                                      isEditing = true; // Bật chế độ chỉnh sửa
+                                      isEditing = true;
                                     });
                                   },
-                                  child: const Text('Chỉnh sửa thông tin'),
+                                  icon: const Icon(Icons.edit),
+                                  label: const Text(
+                                    'Chỉnh sửa thông tin',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                    backgroundColor: Colors.blueAccent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
                                 ),
+
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Căn giữa nút Đăng xuất
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await _apiService.logout(context);
-                        },
-                        child: const Text('Đăng xuất'),
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await _apiService.logout(context);
+                          },
+                          icon: const Icon(Icons.logout),
+                          label: const Text(
+                            'Đăng xuất',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+
                   ],
                 ),
               ),

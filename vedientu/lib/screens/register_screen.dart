@@ -39,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$').hasMatch(password)) {
-    _showDialog("Lỗi", "Mật khẩu phải đủ mạnh.");
+    _showDialog("Lỗi", "Mật khẩu phải đủ mạnh (6 kí tự trở lên, có ít nhất 1 chữ cái thường, 1 chữ cái in hoa, 1 chữ số, 1 ký tự đặc biệt).");
     return;
   }
 
@@ -74,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // Nếu không trùng lặp, thực hiện đăng ký
-    bool isSuccess = await ApiService().registerWithRole(name, email, password, phone, 'DRIVER'); // hoặc 'DRIVER'
+    bool isSuccess = await ApiService().registerWithRole(name, email, password, phone, 'CUSTOMER'); // hoặc 'DRIVER'
 
     if (isSuccess) {
   _showDialog("Thành công", "Đăng ký thành công!", onOk: () {

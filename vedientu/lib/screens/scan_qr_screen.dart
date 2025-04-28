@@ -23,8 +23,8 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   }
 
   void _onDetect(BarcodeCapture barcodeCapture) async {
-    if (isProcessing) return;
-    setState(() => isProcessing = true);
+    if (isProcessing) return;  // Kiểm tra nếu đang xử lý quét, không cho quét lại
+    setState(() => isProcessing = true);  // Đánh dấu đang quét
 
     final Barcode? barcode = barcodeCapture.barcodes.isNotEmpty ? barcodeCapture.barcodes.first : null;
     if (barcode != null && barcode.rawValue != null) {
@@ -52,9 +52,9 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
           if (isSuccess) {
             _showMessage('✅ $message');
 
-            // Lấy tripId từ phản hồi (giả sử backend trả về nó như vậy)
             final tripId = response['tripId'];
             if (tripId != null) {
+              await cameraController.stop();  // 🛑 Dừng camera sau khi quét thành công
               context.push('/passenger-list', extra: {'tripId': tripId});
             } else {
               _showMessage("❌ Không tìm thấy tripId trong phản hồi.");
@@ -70,8 +70,9 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       }
     }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => isProcessing = false);
+    // Delay thêm 2 giây để tránh quét tiếp ngay lập tức
+    await Future.delayed(const Duration(seconds: 2), () {
+      setState(() => isProcessing = false);  // Reset lại isProcessing sau delay
     });
   }
 
@@ -81,6 +82,11 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     );
   }
 
+  // Hàm mở lại camera khi cần
+  void _startCamera() {
+    cameraController.start();  // Mở lại camera
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,6 +94,17 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
         title: const Text('Quét mã QR', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: const Color.fromRGBO(4, 53, 109, 1),
+        actions: [
+          // Thêm nút để mở lại camera với chữ
+          TextButton(
+            onPressed: _startCamera,
+            child: const Text(
+              'Mở lại camera',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+          Icon(Icons.camera_alt, color: Colors.white),
+        ],
       ),
       body: Column(
         children: <Widget>[

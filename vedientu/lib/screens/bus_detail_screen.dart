@@ -129,25 +129,31 @@ class _BusDetailScreenState extends State<BusDetailScreen> {
                     ),
                     const SizedBox(height: 20),
                     assignedDriver != null
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(12),
+                    ? Container(
+                        width: double.infinity, // 👈 THÊM DÒNG NÀY
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              '🧑‍✈️ Tài xế phụ trách:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('🧑‍✈️ Tài xế phụ trách:',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
-                                Text('👤 Họ tên: ${assignedDriver!['fullName']}'),
-                                Text('🆔 Mã tài xế: ${assignedDriver!['id']}'),
-                              ],
-                            ),
-                          )
-                        : const Text('❌ Xe này chưa có tài xế phụ trách',
-                            style: TextStyle(color: Colors.redAccent)),
+                            const SizedBox(height: 6),
+                            Text('👤 Họ tên: ${assignedDriver!['fullName']}'),
+                            Text('🆔 Mã tài xế: ${assignedDriver!['id']}'),
+                          ],
+                        ),
+                      )
+                    : const Text(
+                        '❌ Xe này chưa có tài xế phụ trách',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),                    const SizedBox(height: 20),
+
                   ],
                 ),
               ),

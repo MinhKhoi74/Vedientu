@@ -77,10 +77,10 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
                         value: value,
                         child: Text(
                           value == 'SINGLE'
-                              ? 'Vé đơn'
+                              ? 'Vé đơn (6.000 VNĐ)'
                               : value == 'VIP'
-                                  ? 'Vé VIP'
-                                  : 'Vé tháng',
+                                  ? 'Vé VIP (50.000 VNĐ)'
+                                  : 'Vé tháng (200.000 VNĐ)',
                         ),
                       );
                     }).toList(),

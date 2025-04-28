@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'otp_verification_page.dart';
-
+import 'package:go_router/go_router.dart';
 class ForgotPasswordPage extends StatefulWidget {
   @override
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
@@ -63,7 +63,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Quên mật khẩu")),
+      appBar: AppBar(title: Text("Quên mật khẩu"),
+      leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'), //
+        ),),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(

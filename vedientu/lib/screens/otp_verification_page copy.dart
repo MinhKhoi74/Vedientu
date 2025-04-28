@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart'; // Import ApiService
-
+import 'package:go_router/go_router.dart';
 class OTPVerificationPage extends StatefulWidget {
   final String email;
   OTPVerificationPage({required this.email});
@@ -79,7 +79,12 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Xác thực OTP")),
+      appBar: AppBar(title: Text("Xác thực OTP"),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () => context.go('/forgot-password'), // Quay lại trang trước
+      ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(

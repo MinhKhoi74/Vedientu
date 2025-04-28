@@ -125,10 +125,20 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton(
+            floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/buy-ticket'),
-        child: const Icon(Icons.add),
+        label: const Text(
+          'Mua vé mới',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        icon: const Icon(Icons.add),
+        backgroundColor: Colors.blueAccent,
       ),
+
     );
   }
 }
