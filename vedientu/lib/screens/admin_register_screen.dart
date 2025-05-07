@@ -19,6 +19,8 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
   bool isLoading = false;
   final ApiService apiService = ApiService();
 
+  final _formKey = GlobalKey<FormState>();
+
   Future<void> register() async {
     setState(() => isLoading = true);
 
@@ -42,7 +44,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
     if (success) {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
-      context.pop(true); // Trả kết quả "thành công" cho màn hình trước
+      context.pop(true); // ✅ Trả kết quả về màn trước
     }
 
     setState(() => isLoading = false);
@@ -69,50 +71,58 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
             ],
           ),
           child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => context.pop(),
-                  ),
-                ),
-                const Icon(Icons.account_circle, size: 48, color: Colors.grey),
-                const SizedBox(height: 8),
-                const Text(
-                  'Admin - Tạo tài khoản',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-
-                _buildTextField(label: 'Tên', controller: nameController),
-                _buildTextField(label: 'Email', controller: emailController),
-                _buildTextField(label: 'Mật Khẩu', controller: passwordController),
-                _buildTextField(label: 'Số điện thoại', controller: phoneController),
-                _buildDropdown(),
-
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => context.pop(),
                     ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Tạo tài khoản', style: TextStyle(fontSize: 16, color: Colors.white),),
                   ),
-                ),
+                  const Icon(Icons.account_circle, size: 48, color: Colors.grey),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Admin - Tạo tài khoản',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
 
-                const SizedBox(height: 10),
-                
-              ],
+                  _buildTextField(label: 'Tên', controller: nameController),
+                  _buildTextField(label: 'Email', controller: emailController),
+                  _buildTextField(label: 'Mật Khẩu', controller: passwordController),
+                  _buildTextField(label: 'Số điện thoại', controller: phoneController),
+                  _buildDropdown(),
+
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                        if (_formKey.currentState!.validate()) {
+                          register();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Tạo tài khoản', style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -123,7 +133,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
   Widget _buildTextField({required String label, required TextEditingController controller}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
@@ -131,6 +141,12 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
           filled: true,
           fillColor: Colors.grey[100],
         ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return '$label không được để trống';
+          }
+          return null;
+        },
       ),
     );
   }

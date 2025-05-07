@@ -222,25 +222,31 @@ class _ReportScreenState extends State<ReportScreen> {
                         BarChartRodData(
                             toY: totalUsers.toDouble(),
                             width: 22,
-                            color: Colors.blue)
+                            color: Colors.blue,
+                          borderRadius: BorderRadius.zero,
+                        )
+
                       ]),
                       BarChartGroupData(x: 1, barRods: [
                         BarChartRodData(
                             toY: totalSingleTickets.toDouble(),
                             width: 22,
-                            color: Colors.deepOrange)
+                            color: Colors.deepOrange,
+                          borderRadius: BorderRadius.zero,)
                       ]),
                       BarChartGroupData(x: 2, barRods: [
                         BarChartRodData(
                             toY: totalMonthlyTickets.toDouble(),
                             width: 22,
-                            color: Colors.green)
+                            color: Colors.green,
+                          borderRadius: BorderRadius.zero,)
                       ]),
                       BarChartGroupData(x: 3, barRods: [
                         BarChartRodData(
                             toY: totalVipTickets.toDouble(),
                             width: 22,
-                            color: Colors.redAccent)
+                            color: Colors.redAccent,
+                          borderRadius: BorderRadius.zero,)
                       ]),
                     ],
                     titlesData: FlTitlesData(
