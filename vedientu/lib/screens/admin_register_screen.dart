@@ -41,7 +41,8 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
 
     if (success) {
       await Future.delayed(const Duration(seconds: 1));
-      context.go('/admin-home');
+      if (!mounted) return;
+      context.pop(true); // Trả kết quả "thành công" cho màn hình trước
     }
 
     setState(() => isLoading = false);

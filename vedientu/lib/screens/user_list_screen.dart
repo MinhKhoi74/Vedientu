@@ -99,8 +99,12 @@ class UserListScreenState extends State<UserListScreen> {
       ),
       floatingActionButton: _userRole == 'ADMIN'
           ? FloatingActionButton.extended(
-              onPressed: () => context.push('/admin-register'),
-              icon: const Icon(Icons.person_add),
+        onPressed: () async {
+          final result = await context.push('/admin-register'); // chuyển tới trang tạo tài khoản
+          if (result == true) {
+            _refreshUsers(); // Làm mới danh sách nếu có thay đổi
+          }
+        },              icon: const Icon(Icons.person_add),
               label: const Text('Tạo tài khoản mới'),
             )
           : null,
@@ -120,9 +124,10 @@ class UserListScreenState extends State<UserListScreen> {
                 }
 
                 final users = snapshot.data!;
-                final filteredUsers = selectedRole == 'Tất cả'
+                final filteredUsers = (selectedRole == 'Tất cả'
                     ? users
-                    : users.where((u) => u['role'] == selectedRole).toList();
+                    : users.where((u) => u['role'] == selectedRole).toList()).reversed.toList();
+
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,15 +213,15 @@ Padding(
                                 userRole == 'ADMIN'
                                     ? Icons.admin_panel_settings
                                     : userRole == 'DRIVER'
-                                        ? Icons.local_shipping
-                                        : Icons.person,
+                                    ? Icons.local_shipping
+                                    : Icons.person,
                                 color: userRole == 'ADMIN'
                                     ? Colors.blue
                                     : userRole == 'DRIVER'
-                                        ? Colors.orange
-                                        : Colors.grey,
+                                    ? Colors.orange
+                                    : Colors.grey,
                               ),
-                              title: Text(userName, style: TextStyle(fontWeight: FontWeight.bold)),
+                              title: Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -226,17 +231,18 @@ Padding(
                               ),
                               trailing: userRole != 'ADMIN'
                                   ? IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () {
-                                        _deleteUser(user['id']);
-                                      },
-                                    )
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  _deleteUser(user['id']);
+                                },
+                              )
                                   : null,
                             ),
                           );
                         },
                       ),
                     ),
+
                   ],
                 );
               },
