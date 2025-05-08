@@ -90,93 +90,99 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                         ),
                       ),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: _transactions.length,
-                        itemBuilder: (context, index) {
-                          final tx = _transactions[index];
-                          final String status = tx['status'] ?? '';
-                          final Color ticketColor = _getTicketColor(tx['ticketType'] ?? '');
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey.shade300),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text('Mã giao dịch: ${tx['id']}',
-                                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    const Spacer(),
-                                    Text(
-                                      status.toUpperCase(),
-                                      style: TextStyle(
-                                        color: status == 'COMPLETED' ? Colors.green : Colors.orange,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                      child: Builder(
+                        builder: (context) {
+                          final reversedTransactions = _transactions.reversed.toList(); // 👈 Đảo ngược danh sách
+                          return ListView.builder(
+                            itemCount: reversedTransactions.length,
+                            itemBuilder: (context, index) {
+                              final tx = reversedTransactions[index]; // 👈 Dùng danh sách đã đảo
+                              final String status = tx['status'] ?? '';
+                              final Color ticketColor = _getTicketColor(tx['ticketType'] ?? '');
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text('${tx['userFullName'] ?? 'Không rõ'}',
-                                    style: const TextStyle(fontSize: 16)),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        Text('Ngày giao dịch'),
+                                        Text('Mã giao dịch: ${tx['id']}',
+                                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        const Spacer(),
                                         Text(
-                                          _formatDate(tx['transactionDate'] ?? ''),
-                                          style: const TextStyle(fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        const Text('Loại vé'),
-                                        Text(
-                                          tx['ticketType'] ?? 'Không rõ',
+                                          status.toUpperCase(),
                                           style: TextStyle(
-                                            color: ticketColor,
+                                            color: status == 'COMPLETED' ? Colors.green : Colors.orange,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Phương thức thanh toán: ${tx['paymentMethod'] ?? 'Không rõ'}'),
-                                    Text(
-                                      'Số tiền: ${_formatPrice(tx['amount']?.toDouble() ?? 0)}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    const SizedBox(height: 8),
+                                    Text('${tx['userFullName'] ?? 'Không rõ'}',
+                                        style: const TextStyle(fontSize: 16)),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Ngày giao dịch'),
+                                            Text(
+                                              _formatDate(tx['transactionDate'] ?? ''),
+                                              style: const TextStyle(fontWeight: FontWeight.w500),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            const Text('Loại vé'),
+                                            Text(
+                                              tx['ticketType'] ?? 'Không rõ',
+                                              style: TextStyle(
+                                                color: ticketColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Phương thức thanh toán: ${tx['paymentMethod'] ?? 'Không rõ'}'),
+                                        Text(
+                                          'Số tiền: ${_formatPrice(tx['amount']?.toDouble() ?? 0)}',
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           );
                         },
                       ),
                     ),
+
                   ],
                 ),
     );
