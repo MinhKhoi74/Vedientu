@@ -55,7 +55,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
   Future<void> _fetchDrivers() async {
     final data = await _apiService.getAllDrivers();
     setState(() {
-      _drivers = data;
+      _drivers = data.where((driver) => driver['bus'] == null).toList();
     });
   }
 

@@ -126,7 +126,7 @@ class UserListScreenState extends State<UserListScreen> {
                 final users = snapshot.data!;
                 final filteredUsers = (selectedRole == 'Tất cả'
                     ? users
-                    : users.where((u) => u['role'] == selectedRole).toList()).reversed.toList();
+                    : users.where((u) => u['role'] == selectedRole).toList());
 
 
                 return Column(
