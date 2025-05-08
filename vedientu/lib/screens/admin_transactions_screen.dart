@@ -92,7 +92,7 @@ class _AdminTransactionsScreenState extends State<AdminTransactionsScreen> {
                     Expanded(
                       child: Builder(
                         builder: (context) {
-                          final reversedTransactions = _transactions.reversed.toList(); // 👈 Đảo ngược danh sách
+                          final reversedTransactions = _transactions.toList(); // 👈 Đảo ngược danh sách
                           return ListView.builder(
                             itemCount: reversedTransactions.length,
                             itemBuilder: (context, index) {
