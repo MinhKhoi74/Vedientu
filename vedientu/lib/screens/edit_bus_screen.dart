@@ -9,6 +9,10 @@ class EditBusScreen extends StatefulWidget {
   @override
   _EditBusScreenState createState() => _EditBusScreenState();
 }
+late TextEditingController _licensePlateController;
+late TextEditingController _modelController;
+late TextEditingController _capacityController;
+late TextEditingController _routeController;
 
 class _EditBusScreenState extends State<EditBusScreen> {
   final ApiService _apiService = ApiService();
@@ -24,22 +28,29 @@ class _EditBusScreenState extends State<EditBusScreen> {
   @override
   void initState() {
     super.initState();
+    _licensePlateController = TextEditingController();
+    _modelController = TextEditingController();
+    _capacityController = TextEditingController();
+    _routeController = TextEditingController();
+
     _loadBusDetails();
     _fetchDrivers();
   }
+
 
   Future<void> _loadBusDetails() async {
     final bus = await _apiService.getBusById(widget.busId);
     if (bus != null) {
       setState(() {
-        _licensePlate = bus['licensePlate'] ?? '';
-        _model = bus['model'] ?? '';
-        _capacity = bus['capacity'] ?? 0;
-        _route = bus['route'] ?? '';
+        _licensePlateController.text = bus['licensePlate'] ?? '';
+        _modelController.text = bus['model'] ?? '';
+        _capacityController.text = (bus['capacity'] ?? 0).toString();
+        _routeController.text = bus['route'] ?? '';
         _selectedDriverId = bus['driverId'];
       });
     }
   }
+
 
   Future<void> _fetchDrivers() async {
     final data = await _apiService.getAllDrivers();
@@ -59,10 +70,10 @@ class _EditBusScreenState extends State<EditBusScreen> {
 
       final success = await _apiService.updateBus(
         widget.busId,
-        _licensePlate,
-        _model,
-        _capacity,
-        _route,
+        _licensePlateController.text,
+        _modelController.text,
+        int.tryParse(_capacityController.text) ?? 0,
+        _routeController.text,
         _selectedDriverId!,
       );
 
@@ -88,7 +99,8 @@ class _EditBusScreenState extends State<EditBusScreen> {
           padding: const EdgeInsets.all(24),
           child: Card(
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -98,38 +110,36 @@ class _EditBusScreenState extends State<EditBusScreen> {
                   children: [
                     const Text(
                       'Thông Tin Xe Buýt',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
                       label: 'Biển số',
-                      initialValue: _licensePlate,
-                      onChanged: (val) => _licensePlate = val,
+                      controller: _licensePlateController,
                       validatorText: 'Vui lòng nhập biển số',
                       icon: Icons.confirmation_number,
                     ),
                     _buildTextField(
                       label: 'Mẫu xe',
-                      initialValue: _model,
-                      onChanged: (val) => _model = val,
+                      controller: _modelController,
                       validatorText: 'Vui lòng nhập mẫu xe',
                       icon: Icons.directions_bus,
                     ),
                     _buildTextField(
                       label: 'Sức chứa',
-                      initialValue: _capacity.toString(),
-                      onChanged: (val) => _capacity = int.tryParse(val) ?? 0,
+                      controller: _capacityController,
                       validatorText: 'Vui lòng nhập sức chứa',
                       keyboardType: TextInputType.number,
                       icon: Icons.event_seat,
                     ),
                     _buildTextField(
                       label: 'Tuyến đường',
-                      initialValue: _route,
-                      onChanged: (val) => _route = val,
+                      controller: _routeController,
                       validatorText: 'Vui lòng nhập tuyến đường',
                       icon: Icons.alt_route,
                     ),
+
                     const SizedBox(height: 16),
                     DropdownButtonFormField<int>(
                       decoration: const InputDecoration(
@@ -144,9 +154,10 @@ class _EditBusScreenState extends State<EditBusScreen> {
                           child: Text(driver['fullName']),
                         );
                       }).toList(),
-                      onChanged: (value) => setState(() => _selectedDriverId = value),
+                      onChanged: (value) =>
+                          setState(() => _selectedDriverId = value),
                       validator: (value) =>
-                          value == null ? 'Vui lòng chọn tài xế' : null,
+                      value == null ? 'Vui lòng chọn tài xế' : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -177,8 +188,7 @@ class _EditBusScreenState extends State<EditBusScreen> {
 
   Widget _buildTextField({
     required String label,
-    required String initialValue,
-    required Function(String) onChanged,
+    required TextEditingController controller,
     required String validatorText,
     TextInputType keyboardType = TextInputType.text,
     IconData? icon,
@@ -186,16 +196,15 @@ class _EditBusScreenState extends State<EditBusScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
-        initialValue: initialValue,
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: icon != null ? Icon(icon) : null,
           border: const OutlineInputBorder(),
         ),
         keyboardType: keyboardType,
-        onChanged: onChanged,
         validator: (value) =>
-            (value == null || value.isEmpty) ? validatorText : null,
+        (value == null || value.isEmpty) ? validatorText : null,
       ),
     );
   }
