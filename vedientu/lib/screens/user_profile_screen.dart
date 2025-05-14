@@ -88,7 +88,7 @@ Widget build(BuildContext context) {
                             decoration: const InputDecoration(
                               labelText: 'Họ và tên',
                             ),
-                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            readOnly: !isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Họ và tên không được để trống';
@@ -102,7 +102,7 @@ Widget build(BuildContext context) {
                             decoration: const InputDecoration(
                               labelText: 'Số điện thoại',
                             ),
-                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            readOnly: !isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Số điện thoại không được để trống';
@@ -116,7 +116,7 @@ Widget build(BuildContext context) {
                             decoration: const InputDecoration(
                               labelText: 'Email',
                             ),
-                            enabled: isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
+                            readOnly: !isEditing, // Chỉ cho phép chỉnh sửa khi isEditing = true
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Email không được để trống';
